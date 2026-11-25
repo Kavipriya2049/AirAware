@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyber">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AirAware — Clean-Air Navigation & GroqCloud Copilot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #070d18;
+      --bg-card: #0e1729;
+      --bg-card-elevated: #132038;
+      --border-subtle: #1e2d4a;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent-primary: #06b6d4;
+      --accent-secondary: #10b981;
+      --accent-glow: rgba(6, 182, 212, 0.25);
+    }
+
+    html[data-theme="emerald"] {
+      --bg-primary: #06120e;
+      --bg-card: #0b1f19;
+      --bg-card-elevated: #102c23;
+      --border-subtle: #1b4335;
+      --accent-primary: #10b981;
+      --accent-secondary: #34d399;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+    }
+
+    html[data-theme="violet"] {
+      --bg-primary: #0c0818;
+      --bg-card: #150e29;
+      --bg-card-elevated: #1e143b;
+      --border-subtle: #2e2059;
+      --accent-primary: #8b5cf6;
+      --accent-secondary: #06b6d4;
+      --accent-glow: rgba(139, 92, 246, 0.25);
+    }
+
+    html[data-theme="sunset"]{--bg-primary:#140b08;--bg-card:#201210;--bg-card-elevated:#2c1a15;--border-subtle:#4a2a20;--accent-primary:#f97316;--accent-secondary:#f43f5e;--accent-glow:rgba(249,115,22,.25)}
+html[data-theme="ocean"]{--bg-primary:#051318;--bg-card:#0a2029;--bg-card-elevated:#0f2d39;--border-subtle:#17454f;--accent-primary:#14b8a6;--accent-secondary:#38bdf8;--accent-glow:rgba(20,184,166,.25)}
+html[data-theme="rose"]{--bg-primary:#160912;--bg-card:#24101d;--bg-card-elevated:#321628;--border-subtle:#52213f;--accent-primary:#ec4899;--accent-secondary:#f59e0b;--accent-glow:rgba(236,72,153,.25)}
+html[data-theme="mono"]{--bg-primary:#0b0b0c;--bg-card:#161618;--bg-card-elevated:#202023;--border-subtle:#34343a;--accent-primary:#e5e7eb;--accent-secondary:#9ca3af;--accent-glow:rgba(229,231,235,.25)}
+html[data-theme="contrast"]{--bg-primary:#000000;--bg-card:#0a0a0a;--bg-card-elevated:#141414;--border-subtle:#ffffff;--accent-primary:#ffd400;--accent-secondary:#00e5ff;--accent-glow:rgba(255,212,0,.25)}
+html[data-theme="daylight"]{--bg-primary:#eef2f7;--bg-card:#ffffff;--bg-card-elevated:#f3f6fb;--border-subtle:#cbd5e1;--text-primary:#0f172a;--text-secondary:#475569;--accent-primary:#0891b2;--accent-secondary:#059669;--accent-glow:rgba(8,145,178,.18)}
+html[data-theme="daylight"] .text-white,html[data-theme="daylight"] .text-slate-200,html[data-theme="daylight"] .text-slate-300{color:var(--text-primary)!important}
+html[data-theme="daylight"] .text-slate-400,html[data-theme="daylight"] .text-slate-500{color:var(--text-secondary)!important}
+html[data-theme="daylight"] [class*="text-cyan-"],html[data-theme="daylight"] [class*="text-sky-"]{color:#0e7490!important}
+html[data-theme="daylight"] [class*="text-emerald-"]{color:#047857!important}
+html[data-theme="daylight"] [class*="text-amber-"]{color:#b45309!important}
+html[data-theme="daylight"] [class*="text-rose-"]{color:#be123c!important}
+html[data-theme="daylight"] [class*="text-purple-"],html[data-theme="daylight"] [class*="text-violet-"]{color:#7e22ce!important}
+/* Make hard-coded Tailwind hex colours follow the active theme */
+[class*="bg-[#070d18]"],[class*="bg-[#080f1c]"]{background-color:var(--bg-primary)!important}
+[class*="bg-[#0e1729]"],[class*="bg-[#0b1322]"],[class*="bg-[#09101d]"]{background-color:var(--bg-card)!important}
+[class*="bg-[#132038]"],[class*="bg-[#152442]"]{background-color:var(--bg-card-elevated)!important}
+[class*="border-[#1e2d4a]"]{border-color:var(--border-subtle)!important}
+button:hover{filter:brightness(1.18)}
+.theme-swatch{border:1px solid var(--border-subtle);border-radius:.75rem;padding:.5rem;text-align:left;background:var(--bg-card-elevated);color:var(--text-primary)}
+.theme-swatch.ring-2{box-shadow:0 0 0 2px var(--accent-primary)}
+
+    .leaflet-container{background:var(--bg-primary);font-family:inherit}
+    html:not([data-theme="daylight"]) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.7)}
+    .leaflet-tooltip{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-subtle);font-size:11px}
+    .leaflet-tooltip-top:before{border-top-color:var(--border-subtle)}
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .font-mono-code {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+
+    .surface-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 1rem;
+    }
+
+    .surface-elevated {
+      background-color: var(--bg-card-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 0.875rem;
+    }
+
+    .accent-badge {
+      background-color: var(--accent-glow);
+      border: 1px solid var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    .accent-btn {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: #041016;
+      font-weight: 700;
+    }
+
+    .accent-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.45);
+      border-radius: 9999px;
+    }
+
+    .route-path-clickable {
+      cursor: pointer;
+      transition: stroke-width 160ms ease, opacity 160ms ease, filter 160ms ease;
+    }
+    .route-path-clickable:hover {
+      filter: brightness(1.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Notification Banner (never uses alert/confirm) -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- Top Header Bar -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/90 bg-[#070d18]/95 backdrop-blur-md">
+    <div class="max-w-[1440px] mx-auto px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+      <!-- Left: Hamburger Menu + Brand -->
+      <div class="flex items-center gap-2.5">
+        <button
+          id="hamburgerBtn"
+          type="button"
+          aria-label="Open 10-Feature Navigation Menu"
+          class="p-2.5 rounded-xl bg-[#0e1729] hover:bg-[#162440] border border-[#1e2d4a] text-cyan-300 transition flex items-center justify-center shrink-0"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <button
+          id="brandHomeBtn"
+          type="button"
+          class="flex items-center gap-2.5 text-left group"
+        >
+          <div class="w-9 h-9 rounded-xl accent-btn flex items-center justify-center shadow-md shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l3-7 4 14 3-7h4" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold tracking-tight text-sm sm:text-base text-white">AirAware</span>
+              <span class="hidden md:inline-block font-mono-code text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                LOW-EXPOSURE ENGINE
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 hidden sm:block">Clean-Air Route Intelligence &amp; GroqCloud Copilot</p>
+          </div>
+        </button>
+      </div>
+
+      <!-- Center: Live Location Pill + Locate Me Button -->
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0e1729] border border-[#1e2d4a] max-w-full">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 text-xs font-semibold text-white truncate">
+            <span id="headerPlaceName" class="truncate">Kannampalayam, Coimbatore</span>
+            <span id="headerSourceBadge" class="font-mono-code text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shrink-0">
+              ANCHOR
+            </span>
+          </div>
+          <div id="headerCoordsText" class="font-mono-code text-[10px] text-slate-400 truncate">
+            11.0690° N, 77.1240° E • AQI 58 • PM2.5 14.2 µg/m³
+          </div>
+        </div>
+        <button
+          id="locateMeHeaderBtn"
+          type="button"
+          class="ml-1 px-2.5 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-200 font-mono-code text-[11px] font-semibold transition shrink-0"
+        >
+          Locate Me
+        </button>
+      </div>
+
+      <!-- Right: Theme Switcher + Copilot Button -->
+      <div class="flex items-center gap-2">
+        <button id="openSettingsBtn" type="button" aria-label="Open Settings" class="p-2.5 rounded-xl bg-[#0e1729] border border-[#1e2d4a] text-cyan-300 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4.3a1.7 1.7 0 013.4 0 1.7 1.7 0 002.5 1l.1-.1a1.7 1.7 0 012.4 2.4l-.1.1a1.7 1.7 0 001 2.5 1.7 1.7 0 010 3.4 1.7 1.7 0 00-1 2.5l.1.1a1.7 1.7 0 01-2.4 2.4l-.1-.1a1.7 1.7 0 00-2.5 1 1.7 1.7 0 01-3.4 0 1.7 1.7 0 00-2.5-1l-.1.1a1.7 1.7 0 01-2.4-2.4l.1-.1a1.7 1.7 0 00-1-2.5 1.7 1.7 0 010-3.4 1.7 1.7 0 001-2.5l-.1-.1a1.7 1.7 0 012.4-2.4l.1.1a1.7 1.7 0 002.5-1z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+
+        <button
+          id="copilotToggleBtn"
+          type="button"
+          class="px-3 py-2 rounded-xl accent-btn text-xs flex items-center gap-1.5 shadow transition"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          <span>Copilot</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Slide-Out Hamburger Drawer (All 10 Features + Map View) -->
+  <div id="drawerBackdrop" class="fixed inset-0 z-40 bg-black/65 backdrop-blur-xs hidden transition-opacity"></div>
+  <aside
+    id="navDrawer"
+    aria-label="10 Clean-Air Navigation Features"
+    class="fixed top-0 left-0 z-50 h-full w-[320px] max-w-[90vw] bg-[#0b1322] border-r border-[#1e2d4a] shadow-2xl transform -translate-x-full transition-transform duration-200 flex flex-col"
+  >
+    <div class="p-4 border-b border-[#1e2d4a] flex items-center justify-between">
+      <div>
+        <p class="font-mono-code text-[10px] uppercase tracking-wider text-cyan-400">AIRAWARE // MODULES</p>
+        <h2 class="text-sm font-bold text-white">10 Clean-Air Feature Pages</h2>
+      </div>
+      <button
+        id="closeDrawerBtn"
+        type="button"
+        aria-label="Close Navigation Drawer"
+        class="p-2 rounded-lg bg-[#132038] hover:bg-[#1b2d4f] text-slate-300 border border-[#1e2d4a]"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-3 overflow-y-auto flex-1 space-y-1.5">
+      <button
+        type="button"
+        data-open-page="map"
+        class="drawer-nav-item w-full p-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-left flex items-center justify-between transition"
+      >
+        <div>
+          <span class="font-mono-code text-[10px] text-cyan-300 block">HOME // MAP</span>
+          <span class="text-xs font-bold text-white">Route Map &amp; Corridor Scorer</span>
+        </div>
+        <span class="text-cyan-300 text-xs">→</span>
+      </button>
+
+      <div class="pt-2 pb-1 px-1 font-mono-code text-[10px] uppercase tracking-wider text-slate-500">
+        Dedicated Feature Sub-Pages (1–10)
+      </div>
+
+      <button type="button" data-open-page="mode-shift" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-emerald-400">01 • MODE &amp; DEPARTURE</span>
+          <p class="text-xs font-semibold text-white">Mode-Shift &amp; Departure Advisor</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="health-profile" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-rose-400">02 • SENSITIVITY</span>
+          <p class="text-xs font-semibold text-white">Personal Health &amp; Exposure Profile</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="crowd-fusion" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-amber-400">03 • CROWD + SENSORS</span>
+          <p class="text-xs font-semibold text-white">Crowd &amp; Sensor Fusion</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="explainability" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-cyan-400">04 • WHY CLEANER</span>
+          <p class="text-xs font-semibold text-white">Route Explainability Engine</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="clean-streak" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-emerald-400">05 • HABIT &amp; IMPACT</span>
+          <p class="text-xs font-semibold text-white">Clean-Air Streak &amp; Impact</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="plume-radar" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-sky-400">06 • CANYON &amp; WIND</span>
+          <p class="text-xs font-semibold text-white">Street Canyon &amp; Plume Radar</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="school-safe" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-violet-400">07 • SAFE ZONES</span>
+          <p class="text-xs font-semibold text-white">Sensitive Zone &amp; Safe-Zone Buffer</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="eco-cost" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-amber-400">08 • FUEL &amp; HEALTH COST</span>
+          <p class="text-xs font-semibold text-white">True Cost &amp; Fuel/Emission Ledger</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="offline-cache" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-cyan-400">09 • CACHE &amp; DEMO TOGGLE</span>
+          <p class="text-xs font-semibold text-white">Offline Corridor &amp; Telemetry Cache</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+
+      <button type="button" data-open-page="copilot-lab" class="drawer-nav-item w-full p-2.5 rounded-xl border border-[#1e2d4a] bg-[#0e1729] hover:bg-[#14223d] text-left flex items-center justify-between transition">
+        <div>
+          <span class="font-mono-code text-[10px] text-purple-400">10 • GROQCLOUD AI</span>
+          <p class="text-xs font-semibold text-white">GroqCloud Clean-Air Copilot</p>
+        </div>
+        <span class="text-slate-400 text-xs">→</span>
+      </button>
+    </div>
+
+    <div class="p-3 border-t border-[#1e2d4a]"><button id="openSettingsDrawerBtn" type="button" class="w-full py-2 rounded-xl border border-[#1e2d4a] bg-[#0e1729] text-xs font-semibold text-white">⚙ Settings &amp; Themes</button></div>
+  </aside>
+
+  <!-- Main Content Area (Always Visibly Rendered Immediately) -->
+  <main id="appMain" class="max-w-[1440px] mx-auto px-3 sm:px-5 py-4 space-y-4">
+    <!-- MAP VIEW CONTAINER -->
+    <section id="mapViewSection" class="space-y-4">
+      <!-- Origin / Destination & Controls Strip -->
+      <div class="surface-card p-3.5 sm:p-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
+          <div class="lg:col-span-4">
+            <label class="block font-mono-code text-[10px] uppercase tracking-wider text-slate-400 mb-1">Origin (Live / Custom)</label>
+            <input
+              id="originInput"
+              type="text"
+              class="w-full px-3 py-2 rounded-xl bg-[#070d18] border border-[#1e2d4a] text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+          <div class="lg:col-span-4">
+            <label class="block font-mono-code text-[10px] uppercase tracking-wider text-slate-400 mb-1">Destination Corridor</label>
+            <div class="relative">
+              <input
+                id="destinationInput"
+                type="text"
+                autocomplete="off"
+                placeholder="Type a place, area or address…"
+                class="w-full px-3 py-2 rounded-xl bg-[#070d18] border border-[#1e2d4a] text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400"
+              />
+              <div id="destSuggestions" class="hidden absolute left-0 right-0 top-full mt-1 z-40 max-h-64 overflow-y-auto rounded-xl shadow-2xl" style="background:var(--bg-card);border:1px solid var(--border-subtle)"></div>
+            </div>
+            <p id="destTripInfo" class="font-mono-code text-[11px] text-emerald-300 mt-1"></p>
+          </div>
+          <div class="lg:col-span-4 flex flex-wrap items-center gap-2">
+            <button
+              id="recalculateRoutesBtn"
+              type="button"
+              class="flex-1 py-2.5 px-3.5 rounded-xl accent-btn text-xs sm:text-sm transition"
+            >
+              Score Routes
+            </button>
+            <button
+              id="demoSimToggleBtn"
+              type="button"
+              class="py-2.5 px-3 rounded-xl bg-[#132038] hover:bg-[#1a2c4d] border border-[#1e2d4a] text-xs font-mono-code text-amber-300 transition"
+            >
+              Demo Sim: ON
+            </button>
+            <button
+              id="resetSimBtn"
+              type="button"
+              class="py-2.5 px-3 rounded-xl bg-[#132038] hover:bg-[#1a2c4d] border border-[#1e2d4a] text-xs font-mono-code text-slate-300 transition"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map + Route Selector & Explainability Grid -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+        <!-- Interactive Corridor Map (7 cols on xl) -->
+        <div class="xl:col-span-7 surface-card p-3.5 sm:p-4 flex flex-col justify-between space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="font-mono-code text-[10px] uppercase tracking-wider text-cyan-400">CORRIDOR EXPOSURE MAP</span>
+              <h1 id="mapHeadlineTitle" class="text-base sm:text-lg font-bold text-white">
+                Kannampalayam → Pappampatti Pirivu Low-Exposure Corridors
+              </h1>
+            </div>
+            <div class="flex items-center gap-2 font-mono-code text-[11px]">
+              <span id="leafletStatusBadge" class="px-2.5 py-1 rounded-lg bg-[#132038] border border-[#1e2d4a] text-cyan-300">
+                Vector Corridor Engine Active
+              </span>
+              <button
+                id="askCopilotAboutMapBtn"
+                type="button"
+                class="px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/40 text-purple-200 transition"
+              >
+                Ask Copilot
+              </button>
+            </div>
+          </div>
+
+          <!-- Always-Visible Interactive SVG/Canvas Corridor Map Viewport -->
+          <div id="corridorMapWrapper" class="relative w-full h-[340px] sm:h-[420px] rounded-xl overflow-hidden border border-[#1e2d4a] bg-[#060c17]" style="isolation:isolate">
+            <div id="leafletMap" class="absolute inset-0 hidden"></div>
+            <svg id="corridorSvgMap" viewBox="0 0 800 400" class="w-full h-full block select-none" role="img" aria-label="Interactive Clean-Air Corridor Map">
+              <defs>
+                <radialGradient id="plumeHotspotGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.42" />
+                  <stop offset="55%" stop-color="#f59e0b" stop-opacity="0.18" />
+                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
+                </radialGradient>
+                <radialGradient id="cleanZoneGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.28" />
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+
+              <!-- Background Urban Grid -->
+              <g id="mapGridLayer" stroke="#132038" stroke-width="1"></g>
+
+              <!-- Plume & Safe-Zone Overlays -->
+              <ellipse id="plumeEllipseMain" cx="430" cy="145" rx="135" ry="68" fill="url(#plumeHotspotGrad)" />
+              <ellipse id="cleanZoneEllipse" cx="390" cy="295" rx="140" ry="62" fill="url(#cleanZoneGrad)" />
+
+              <!-- Secondary Street Context -->
+              <g stroke="#1a2942" stroke-width="2" stroke-dasharray="5 5" fill="none">
+                <path d="M 90 90 L 710 90" />
+                <path d="M 90 200 L 710 200" />
+                <path d="M 90 310 L 710 310" />
+                <path d="M 220 40 L 220 360" />
+                <path d="M 410 40 L 410 360" />
+                <path d="M 600 40 L 600 360" />
+              </g>
+
+              <!-- Route 3: Fastest Route (Amber/Rose) -->
+              <path
+                id="svgPathFastest"
+                class="route-path-clickable"
+                d="M 115 215 C 235 125, 360 110, 470 135 C 555 155, 625 180, 690 190"
+                fill="none"
+                stroke="#f59e0b"
+                stroke-width="6"
+                stroke-linecap="round"
+              />
+
+              <!-- Route 2: Balanced Route (Cyan) -->
+              <path
+                id="svgPathBalanced"
+                class="route-path-clickable"
+                d="M 115 215 C 245 205, 355 230, 480 210 C 565 196, 630 192, 690 190"
+                fill="none"
+                stroke="#06b6d4"
+                stroke-width="6"
+                stroke-linecap="round"
+              />
+
+              <!-- Route 1: Cleanest Air Route (Emerald) -->
+              <path
+                id="svgPathCleanest"
+                class="route-path-clickable"
+                d="M 115 215 C 220 305, 345 335, 485 285 C 570 255, 635 215, 690 190"
+                fill="none"
+                stroke="#10b981"
+                stroke-width="7"
+                stroke-linecap="round"
+              />
+
+              <!-- Hotspot & Wind Callout Badges -->
+              <g id="mapAnnotationsLayer">
+                <rect x="355" y="92" width="168" height="24" rx="6" fill="#0e1729" stroke="#f43f5e" stroke-opacity="0.7" />
+                <text id="mapHotspotLabel" x="439" y="108" text-anchor="middle" fill="#fda4af" font-size="10.5" font-family="JetBrains Mono, monospace">
+                  Idling &amp; Plume Hotspot
+                </text>
+
+                <rect x="315" y="330" width="180" height="24" rx="6" fill="#0e1729" stroke="#10b981" stroke-opacity="0.7" />
+                <text id="mapCleanLabel" x="405" y="346" text-anchor="middle" fill="#6ee7b7" font-size="10.5" font-family="JetBrains Mono, monospace">
+                  Crosswind &amp; Tree Buffer
+                </text>
+              </g>
+
+              <!-- Origin & Destination Nodes -->
+              <g>
+                <circle cx="115" cy="215" r="10" fill="#06b6d4" stroke="#070d18" stroke-width="3" />
+                <text x="115" y="242" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="700" font-family="Inter, sans-serif">
+                  ORIGIN (LIVE)
+                </text>
+
+                <circle cx="690" cy="190" r="10" fill="#10b981" stroke="#070d18" stroke-width="3" />
+                <text x="690" y="217" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="700" font-family="Inter, sans-serif">
+                  DESTINATION
+                </text>
+              </g>
+            </svg>
+
+            <!-- Map Legend Pill -->
+            <div class="absolute bottom-3 left-3 z-[500] px-3 py-1.5 rounded-xl bg-[#070d18]/90 border border-[#1e2d4a] flex flex-wrap items-center gap-3 text-[11px] font-mono-code">
+              <span class="flex items-center gap-1.5 text-emerald-300"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>Cleanest</span>
+              <span class="flex items-center gap-1.5 text-cyan-300"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>Balanced</span>
+              <span class="flex items-center gap-1.5 text-amber-300"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Fastest</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Route Cards & "Why This Road Is Cleaner" Explainability (5 cols on xl) -->
+        <div class="xl:col-span-5 flex flex-col gap-4">
+          <div class="surface-card p-3.5 sm:p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold text-white">Candidate Corridors (Click to Select)</h2>
+              <span id="exposureDeltaPill" class="font-mono-code text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                -38% PM2.5 Exposure
+              </span>
+            </div>
+            <div id="routeCardsList" class="space-y-2"></div>
+          </div>
+
+          <!-- Transparent "Why This Road Is Cleaner" Breakdown -->
+          <div class="surface-card p-3.5 sm:p-4 space-y-3 flex-1">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold text-white">Why This Road Is Cleaner</h2>
+              <span id="selectedRouteBadge" class="font-mono-code text-[11px] text-emerald-300">Cleanest Air Route</span>
+            </div>
+            <p id="explainabilitySummaryText" class="text-xs text-slate-300 leading-relaxed"></p>
+
+            <div id="explainabilityMetricsGrid" class="grid grid-cols-2 gap-2 text-xs"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEDICATED FULL SUB-PAGE VIEW FOR ALL 10 HAMBURGER MENU FEATURES -->
+    <section id="featureSubPageSection" class="hidden space-y-4">
+      <!-- Top Back Bar + Sub-Page Title -->
+      <div class="surface-card p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button
+            id="backToMapBtn"
+            type="button"
+            class="px-3 py-2 rounded-xl bg-[#132038] hover:bg-[#1a2c4d] border border-[#1e2d4a] text-xs font-semibold text-cyan-300 transition flex items-center gap-1.5"
+          >
+            <span>← Back to Route Map</span>
+          </button>
+          <div>
+            <span id="subPageTag" class="font-mono-code text-[10px] uppercase tracking-wider text-emerald-400">FEATURE 01 / 10</span>
+            <h1 id="subPageTitle" class="text-base sm:text-xl font-bold text-white">Mode-Shift &amp; Departure Advisor</h1>
+          </div>
+        </div>
+
+        <button
+          id="subPageOpenCopilotBtn"
+          type="button"
+          class="px-3 py-2 rounded-xl accent-btn text-xs transition"
+        >
+          Ask GroqCloud Copilot
+        </button>
+      </div>
+
+      <!-- Live Location Telemetry Banner (Auto-fetched + Re-fetch GPS + Presets/Custom Coords) -->
+      <div class="surface-elevated p-3.5 sm:p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            <span class="font-mono-code text-xs font-bold text-white" id="bannerLocationTitle">
+              Live Location Telemetry — Kannampalayam, Coimbatore
+            </span>
+            <span id="bannerSourceTag" class="font-mono-code text-[10px] px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+              LIVE / ANCHOR
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="bannerSyncStatus" class="font-mono-code text-[11px] text-slate-400">Synced</span>
+            <button
+              id="refetchGpsBannerBtn"
+              type="button"
+              class="px-3 py-1.5 rounded-lg accent-btn text-xs transition"
+            >
+              Re-fetch GPS
+            </button>
+          </div>
+        </div>
+
+        <div id="bannerTelemetryStats" class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono-code"></div>
+
+        <!-- Corridor Presets & Custom Coordinates -->
+        <div class="pt-2 border-t border-[#1e2d4a] flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-slate-400 font-mono-code text-[11px]">Corridors:</span>
+          <button type="button" data-preset="kannampalayam" class="preset-loc-btn px-2.5 py-1 rounded-lg bg-[#0e1729] hover:bg-[#172642] border border-[#1e2d4a] text-slate-200">
+            Kannampalayam (11.069, 77.124)
+          </button>
+          <button type="button" data-preset="gandhipuram" class="preset-loc-btn px-2.5 py-1 rounded-lg bg-[#0e1729] hover:bg-[#172642] border border-[#1e2d4a] text-slate-200">
+            Gandhipuram Hub (11.018, 76.967)
+          </button>
+          <button type="button" data-preset="singanallur" class="preset-loc-btn px-2.5 py-1 rounded-lg bg-[#0e1729] hover:bg-[#172642] border border-[#1e2d4a] text-slate-200">
+            Singanallur Lake (10.996, 77.024)
+          </button>
+
+          <div class="flex items-center gap-1.5 ml-auto">
+            <input id="customLatInput" type="number" step="0.001" placeholder="Lat" class="w-24 px-2 py-1 rounded-lg bg-[#070d18] border border-[#1e2d4a] font-mono-code text-xs text-white" />
+            <input id="customLonInput" type="number" step="0.001" placeholder="Lon" class="w-24 px-2 py-1 rounded-lg bg-[#070d18] border border-[#1e2d4a] font-mono-code text-xs text-white" />
+            <button id="applyCustomCoordsBtn" type="button" class="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-200 font-mono-code text-xs">
+              Set Coords
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Feature Content Container -->
+      <div id="featureDynamicBody" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <!-- Slide-Over GroqCloud Copilot Panel (Accessible from Main View & Sub-Pages) -->
+  <div id="copilotBackdrop" class="fixed inset-0 z-40 bg-black/55 hidden"></div>
+  <aside
+    id="copilotDrawer"
+    aria-label="GroqCloud Clean-Air Copilot"
+    class="fixed top-0 right-0 z-50 h-full w-full sm:w-[420px] bg-[#0b1322] border-l border-[#1e2d4a] shadow-2xl transform translate-x-full transition-transform duration-200 flex flex-col"
+  >
+    <div class="p-3.5 border-b border-[#1e2d4a] flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-mono-code text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">
+            GROQCLOUD API
+          </span>
+          <span id="copilotModeBadge" class="font-mono-code text-[10px] text-slate-400">Local Engine Ready</span>
+        </div>
+        <h2 class="text-sm font-bold text-white mt-0.5">Clean-Air Copilot</h2>
+      </div>
+      <button
+        id="closeCopilotBtn"
+        type="button"
+        aria-label="Close Copilot Panel"
+        class="p-2 rounded-lg bg-[#132038] hover:bg-[#1b2d4f] text-slate-300 border border-[#1e2d4a]"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Collapsible GroqCloud API Configuration -->
+    <div class="p-3 border-b border-[#1e2d4a] bg-[#09101d] space-y-2 text-xs">
+      <div class="flex items-center justify-between">
+        <span class="font-mono-code text-[11px] text-slate-300">GroqCloud API Key (Optional)</span>
+        <span id="groqKeyStatusText" class="font-mono-code text-[10px] text-amber-300">Fallback Active</span>
+      </div>
+      <div class="flex gap-1.5">
+        <input
+          id="groqApiKeyInput"
+          type="password"
+          placeholder="gsk_... (saved locally)"
+          class="flex-1 px-2.5 py-1.5 rounded-lg bg-[#070d18] border border-[#1e2d4a] font-mono-code text-xs text-white focus:outline-none focus:border-purple-400"
+        />
+        <button id="saveGroqKeyBtn" type="button" class="px-2.5 py-1.5 rounded-lg bg-purple-500/25 hover:bg-purple-500/35 border border-purple-500/40 text-purple-200 font-mono-code text-xs">
+          Save
+        </button>
+      </div>
+      <div class="flex items-center justify-between gap-2">
+        <label for="groqModelSelect" class="font-mono-code text-[10px] text-slate-400">Model:</label>
+        <select id="groqModelSelect" class="flex-1 px-2 py-1 rounded-lg bg-[#070d18] border border-[#1e2d4a] font-mono-code text-[11px] text-slate-200">
+          <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option>
+          <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+          <option value="openai/gpt-oss-20b">openai/gpt-oss-20b</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Quick Prompt Chips -->
+    <div class="px-3 py-2 border-b border-[#1e2d4a] flex flex-wrap gap-1.5">
+      <button type="button" data-quick-prompt="Why is the Cleanest Air Route better right now and what is the PM2.5 trade-off?" class="quick-prompt-btn px-2 py-1 rounded-lg bg-[#132038] hover:bg-[#1a2c4d] border border-[#1e2d4a] text-[11px] text-cyan-200">
+        Why cleanest route?
+      </button>
+      <button type="button" data-quick-prompt="Should I shift my departure time or switch to transit/cycling given current wind and AQI?" class="quick-prompt-btn px-2 py-1 rounded-lg bg-[#132038] hover:bg-[#1a2c4d] border border-[#1e2d4a] text-[11px] text-emerald-200">
+        Departure &amp; mode advice
+      </button>
+      <button type="button" data-quick-prompt="Summarize my current location air exposure and safety tips for sensitive commuters." class="quick-prompt-btn px-2 py-1 rounded-lg bg-[#132038] hover:bg-[#1a2c4d] border border-[#1e2d4a] text-[11px] text-amber-200">
+        Location safety brief
+      </button>
+    </div>
+
+    <!-- Messages Feed -->
+    <div id="copilotMessagesList" class="flex-1 p-3 overflow-y-auto space-y-2.5 text-xs"></div>
+
+    <!-- Message Composer -->
+    <form id="copilotChatForm" class="p-3 border-t border-[#1e2d4a] bg-[#09101d] flex gap-2">
+      <input
+        id="copilotPromptInput"
+        type="text"
+        placeholder="Ask about cleaner roads, plumes, transit..."
+        class="flex-1 px-3 py-2 rounded-xl bg-[#070d18] border border-[#1e2d4a] text-xs text-white focus:outline-none focus:border-cyan-400"
+      />
+      <button type="submit" class="px-3.5 py-2 rounded-xl accent-btn text-xs shrink-0">
+        Send
+      </button>
+    </form>
+  </aside>
+
+  <div id="settingsBackdrop" class="fixed inset-0 z-[60] bg-black/65 hidden"></div>
+  <section id="settingsPanel" role="dialog" aria-label="Settings" class="fixed z-[70] inset-x-3 top-16 max-w-lg mx-auto surface-card p-4 space-y-4 hidden max-h-[80vh] overflow-y-auto shadow-2xl">
+    <div class="flex items-center justify-between"><h2 class="text-sm font-bold text-white">Settings</h2><button id="closeSettingsBtn" type="button" aria-label="Close Settings" class="px-2.5 py-1 rounded-lg bg-[#132038] border border-[#1e2d4a] text-slate-300 text-xs">✕</button></div>
+    <div><p class="font-mono-code text-[10px] uppercase tracking-wider text-slate-400 mb-2">Theme</p><div id="themeGrid" class="grid grid-cols-2 gap-2"></div></div>
+    <div><p class="font-mono-code text-[10px] uppercase tracking-wider text-slate-400 mb-2">Text size</p><div class="flex gap-2" id="fontScaleRow"></div></div>
+    <button id="resetSettingsBtn" type="button" class="px-3 py-1.5 rounded-lg border border-[#1e2d4a] bg-[#0e1729] text-xs text-slate-200">Reset theme &amp; text size</button>
+  </section>
+
+  <script>
+    /**
+     * AirAware — Clean-Air Navigation & Low-Exposure Route Intelligence App
+     * Self-contained, fault-tolerant single-file implementation.
+     */
+
+    const CORRIDOR_PRESETS = {
+      kannampalayam: {
+        placeName: 'Kannampalayam, Coimbatore',
+        lat: 11.069,
+        lon: 77.124,
+        source: 'CORRIDOR ANCHOR'
+      },
+      gandhipuram: {
+        placeName: 'Gandhipuram Hub, Coimbatore',
+        lat: 11.018,
+        lon: 76.967,
+        source: 'CORRIDOR ANCHOR'
+      },
+      singanallur: {
+        placeName: 'Singanallur Lake, Coimbatore',
+        lat: 10.996,
+        lon: 77.024,
+        source: 'CORRIDOR ANCHOR'
+      }
+    };
+
+    const SUBPAGE_META = {
+      'mode-shift': { num: '01', title: 'Mode-Shift & Departure Advisor', tag: 'FEATURE 01 / 10 • TRANSIT & TIMING' },
+      'health-profile': { num: '02', title: 'Personal Health & Exposure Profile', tag: 'FEATURE 02 / 10 • SENSITIVITY WEIGHTING' },
+      'crowd-fusion': { num: '03', title: 'Crowd & Sensor Fusion', tag: 'FEATURE 03 / 10 • HAZARD & TRUST FUSION' },
+      'explainability': { num: '04', title: 'Route Explainability Engine', tag: 'FEATURE 04 / 10 • TRANSPARENT SCORING' },
+      'clean-streak': { num: '05', title: 'Clean-Air Streak & Impact', tag: 'FEATURE 05 / 10 • EXPOSURE AVOIDED' },
+      'plume-radar': { num: '06', title: 'Street Canyon & Plume Radar', tag: 'FEATURE 06 / 10 • WIND & CANYON MODEL' },
+      'school-safe': { num: '07', title: 'Sensitive Zone & Safe-Zone Buffer', tag: 'FEATURE 07 / 10 • SCHOOLS, HOSPITALS & PARKS' },
+      'eco-cost': { num: '08', title: 'True Cost & Fuel/Emission Ledger', tag: 'FEATURE 08 / 10 • FUEL, CO2 & HEALTH COST' },
+      'offline-cache': { num: '09', title: 'Offline Corridor & Telemetry Cache', tag: 'FEATURE 09 / 10 • CACHE & DEMO TOGGLE' },
+      'copilot-lab': { num: '10', title: 'GroqCloud Clean-Air Copilot', tag: 'FEATURE 10 / 10 • GROQCLOUD AI LAB' }
+    };
+
+    const HEALTH_PROFILES = {
+      standard: { label: 'Standard Commuter', multiplier: 1.0, note: 'Balanced weighting across PM2.5, NO2, and idling tailpipe plumes.' },
+      asthma: { label: 'Asthma / Respiratory', multiplier: 1.45, note: 'Higher penalty on fine particulates (PM2.5), NO2 irritation, and stagnant canyons.' },
+      cyclist: { label: 'Cyclist / Runner', multiplier: 1.32, note: 'Accounts for elevated ventilation rate and direct roadside exhaust exposure.' },
+      elderly: { label: 'Child / Elderly', multiplier: 1.38, note: 'Prioritizes buffered green corridors and lower pollutant peaks.' }
+    };
+
+    const THEMES = [
+      { id: 'cyber', name: 'Cyber Navy', sw: ['#070d18', '#06b6d4', '#10b981'] },
+      { id: 'emerald', name: 'Emerald Eco', sw: ['#06120e', '#10b981', '#34d399'] },
+      { id: 'violet', name: 'Violet Pulse', sw: ['#0c0818', '#8b5cf6', '#06b6d4'] },
+      { id: 'sunset', name: 'Sunset Ember', sw: ['#140b08', '#f97316', '#f43f5e'] },
+      { id: 'ocean', name: 'Ocean Teal', sw: ['#051318', '#14b8a6', '#38bdf8'] },
+      { id: 'rose', name: 'Rose Quartz', sw: ['#160912', '#ec4899', '#f59e0b'] },
+      { id: 'mono', name: 'Midnight Mono', sw: ['#0b0b0c', '#e5e7eb', '#9ca3af'] },
+      { id: 'contrast', name: 'High Contrast', sw: ['#000000', '#ffd400', '#00e5ff'] },
+      { id: 'daylight', name: 'Daylight (Light)', sw: ['#eef2f7', '#0891b2', '#059669'] }
+    ];
+    const state = {
+      fontScale: 100,
+      trip: null, // { km, min, via } for the selected destination
+      destCoords: null,
+      routeGeo: null,
+      activeView: 'map', // 'map' or one of SUBPAGE_META keys
+      theme: 'cyber',
+      origin: 'Kannampalayam (11.069° N, 77.124° E)',
+      destination: 'Pappampatti Pirivu & Green Bypass',
+      selectedRouteId: 'cleanest',
+      demoSimEnabled: true,
+      departShiftMin: 20,
+      healthProfile: 'standard',
+      customPmWeight: 1.0,
+      customNo2Weight: 1.0,
+      windSpeedKmh: 11,
+      windDeg: 75,
+      canyonRatio: 1.4,
+      idlingPct: 24,
+      streakDays: 6,
+      pmAvoidedTotalUg: 148.4,
+      co2SavedKg: 19.6,
+      streakHistory: [
+        'Today: Took Green Bypass (-38% PM2.5 exposure, +4.2 µg avoided)',
+        'Yesterday: Shifted departure +20 min past morning arterial bottleneck',
+        '2 days ago: Combined metro/bus leg with low-traffic neighborhood road'
+      ],
+      hazards: [
+        { id: 'h1', type: 'Heavy Diesel Gridlock', zone: 'Avinashi Feeder Junction', lat: 11.074, lon: 77.129, ageMin: 14, trust: 0.92, aqiBoost: 24 },
+        { id: 'h2', type: 'Road Dust / Construction', zone: 'East Service Lane', lat: 11.065, lon: 77.119, ageMin: 36, trust: 0.78, aqiBoost: 18 }
+      ],
+      location: {
+        placeName: 'Kannampalayam, Coimbatore',
+        lat: 11.069,
+        lon: 77.124,
+        accuracyM: 35,
+        source: 'DEFAULT ANCHOR',
+        updatedAt: 'Ready'
+      },
+      air: {
+        aqi: 58,
+        pm25: 14.2,
+        pm10: 31.5,
+        no2: 19.4,
+        windKmh: 11,
+        windDeg: 75,
+        tempC: 29.1,
+        source: 'Baseline Telemetry'
+      },
+      groq: {
+        apiKey: '',
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'assistant',
+            text: 'Clean-Air Copilot online. Ask me why the Cleanest Air Route reduces exposure, whether shifting departure time helps, or how local wind and street canyons affect your route.'
+          }
+        ]
+      }
+    };
+
+    let watchPositionId = null;
+
+    /**
+     * Show non-blocking toast notification
+     */
+    function showToast(title, detail, tone = 'info') {
+      try {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const el = document.createElement('div');
+        const borderClass = tone === 'warn' ? 'border-amber-400/60 text-amber-200' : 'border-cyan-400/60 text-cyan-100';
+        el.className = `pointer-events-auto px-3.5 py-2.5 rounded-xl bg-[#0e1729]/95 border ${borderClass} shadow-xl text-xs max-w-xs transition`;
+        el.innerHTML = `<p class="font-bold text-white">${escapeHtml(title)}</p><p class="text-slate-300 mt-0.5">${escapeHtml(detail)}</p>`;
+        container.appendChild(el);
+        setTimeout(() => {
+          el.style.opacity = '0';
+          setTimeout(() => el.remove(), 250);
+        }, 3400);
+      } catch (_) {}
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    /**
+     * Safe fetch with timeout so external APIs never hang UI rendering
+     */
+    async function safeFetchJson(url, timeoutMs = 4500, options = {}) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (_) {
+        clearTimeout(timer);
+        return null;
+      }
+    }
+
+    /**
+     * Persist non-sensitive UI preferences safely
+     */
+    function savePrefs() {
+      try {
+        localStorage.setItem('airaware_prefs_v1', JSON.stringify({
+          theme: state.theme, fontScale: state.fontScale,
+          selectedRouteId: state.selectedRouteId,
+          demoSimEnabled: state.demoSimEnabled,
+          departShiftMin: state.departShiftMin,
+          healthProfile: state.healthProfile,
+          customPmWeight: state.customPmWeight,
+          customNo2Weight: state.customNo2Weight,
+          windSpeedKmh: state.windSpeedKmh,
+          windDeg: state.windDeg,
+          canyonRatio: state.canyonRatio,
+          idlingPct: state.idlingPct,
+          streakDays: state.streakDays,
+          pmAvoidedTotalUg: state.pmAvoidedTotalUg,
+          co2SavedKg: state.co2SavedKg,
+          groqModel: state.groq.model,
+          groqKey: state.groq.apiKey
+        }));
+      } catch (_) {}
+    }
+
+    function loadPrefs() {
+      try {
+        const raw = (localStorage.getItem('airaware_prefs_v1') || localStorage.getItem('aerogrid_cleanpath_prefs_v1'));
+        if (!raw) return;
+        const p = JSON.parse(raw);
+        if (p.theme) state.theme = p.theme;
+        if ([90, 100, 112].includes(p.fontScale)) state.fontScale = p.fontScale;
+        if (p.selectedRouteId) state.selectedRouteId = p.selectedRouteId;
+        if (typeof p.demoSimEnabled === 'boolean') state.demoSimEnabled = p.demoSimEnabled;
+        if (typeof p.departShiftMin === 'number') state.departShiftMin = p.departShiftMin;
+        if (p.healthProfile && HEALTH_PROFILES[p.healthProfile]) state.healthProfile = p.healthProfile;
+        if (typeof p.customPmWeight === 'number') state.customPmWeight = p.customPmWeight;
+        if (typeof p.customNo2Weight === 'number') state.customNo2Weight = p.customNo2Weight;
+        if (typeof p.windSpeedKmh === 'number') state.windSpeedKmh = p.windSpeedKmh;
+        if (typeof p.windDeg === 'number') state.windDeg = p.windDeg;
+        if (typeof p.canyonRatio === 'number') state.canyonRatio = p.canyonRatio;
+        if (typeof p.idlingPct === 'number') state.idlingPct = p.idlingPct;
+        if (typeof p.streakDays === 'number') state.streakDays = p.streakDays;
+        if (typeof p.pmAvoidedTotalUg === 'number') state.pmAvoidedTotalUg = p.pmAvoidedTotalUg;
+        if (typeof p.co2SavedKg === 'number') state.co2SavedKg = p.co2SavedKg;
+        if (p.groqModel && p.groqModel !== 'mixtral-8x7b-32768') state.groq.model = p.groqModel;
+        if (typeof p.groqKey === 'string') state.groq.apiKey = p.groqKey;
+      } catch (_) {}
+    }
+
+    /**
+     * Apply visual theme (Cyber Navy, Emerald Eco, Violet Pulse)
+     */
+    function setTheme(themeName) {
+      const valid = THEMES.some((t) => t.id === themeName) ? themeName : 'cyber';
+      state.theme = valid;
+      document.documentElement.setAttribute('data-theme', valid);
+      document.querySelectorAll('.theme-btn').forEach((btn) => {
+        const active = btn.getAttribute('data-theme-set') === valid;
+        btn.classList.toggle('ring-2', active);
+        btn.setAttribute('aria-pressed', String(active));
+      });
+      savePrefs();
+    }
+
+    function applyFontScale(pct) {
+      state.fontScale = pct;
+      document.documentElement.style.fontSize = pct + '%';
+      document.querySelectorAll('[data-font-scale]').forEach((b) => b.classList.toggle('ring-2', Number(b.dataset.fontScale) === pct));
+      savePrefs();
+    }
+
+    function setSettingsOpen(open) {
+      document.getElementById('settingsPanel')?.classList.toggle('hidden', !open);
+      document.getElementById('settingsBackdrop')?.classList.toggle('hidden', !open);
+      if (open) setDrawerOpen(false);
+    }
+
+    function initSettings() {
+      const grid = document.getElementById('themeGrid');
+      if (grid) {
+        grid.innerHTML = THEMES.map((t) => `<button type="button" data-theme-set="${t.id}" class="theme-btn theme-swatch"><span class="flex gap-1 mb-1.5">${t.sw.map((c) => `<span style="background:${c};width:16px;height:16px;border-radius:9999px;border:1px solid rgba(128,128,128,.5)"></span>`).join('')}</span><span class="text-[11px] font-semibold">${t.name}</span></button>`).join('');
+        grid.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
+      }
+      const row = document.getElementById('fontScaleRow');
+      if (row) {
+        row.innerHTML = [[90, 'Small'], [100, 'Default'], [112, 'Large']].map(([v, l]) => `<button type="button" data-font-scale="${v}" class="theme-swatch text-[11px] font-semibold flex-1 text-center">${l}</button>`).join('');
+        row.querySelectorAll('[data-font-scale]').forEach((b) => b.addEventListener('click', () => applyFontScale(Number(b.dataset.fontScale))));
+      }
+      ['openSettingsBtn', 'openSettingsDrawerBtn'].forEach((id) => document.getElementById(id)?.addEventListener('click', () => setSettingsOpen(true)));
+      ['closeSettingsBtn', 'settingsBackdrop'].forEach((id) => document.getElementById(id)?.addEventListener('click', () => setSettingsOpen(false)));
+      document.getElementById('resetSettingsBtn')?.addEventListener('click', () => { setTheme('cyber'); applyFontScale(100); showToast('Settings Reset', 'Theme and text size restored.'); });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { setSettingsOpen(false); setDrawerOpen(false); setCopilotOpen(false); }
+      });
+      setTheme(state.theme);
+      applyFontScale(state.fontScale);
+    }
+
+    /**
+     * Enrich coordinates with reverse geocode + Open-Meteo Air & Weather (with safe fallbacks)
+     */
+    async function enrichLocationData(lat, lon) {
+      const safeLat = Number(lat) || 11.069;
+      const safeLon = Number(lon) || 77.124;
+
+      const [geoData, airData, wxData] = await Promise.all([
+        safeFetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${safeLat.toFixed(4)}&lon=${safeLon.toFixed(4)}&zoom=15`, 3500),
+        safeFetchJson(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${safeLat.toFixed(4)}&longitude=${safeLon.toFixed(4)}&current=us_aqi,pm2_5,pm10,nitrogen_dioxide`, 4000),
+        safeFetchJson(`https://api.open-meteo.com/v1/forecast?latitude=${safeLat.toFixed(4)}&longitude=${safeLon.toFixed(4)}&current=temperature_2m,wind_speed_10m,wind_direction_10m`, 4000)
+      ]);
+
+      if (geoData && geoData.address && !/ANCHOR/.test(state.location.source)) {
+        const a = geoData.address;
+        const place = a.suburb || a.neighbourhood || a.village || a.town || a.city || a.county || 'Kannampalayam';
+        const region = a.state_district || a.state || 'Coimbatore';
+        state.location.placeName = `${place}, ${region}`;
+      }
+
+      if (airData && airData.current) {
+        const c = airData.current;
+        if (typeof c.us_aqi === 'number') state.air.aqi = Math.round(c.us_aqi);
+        if (typeof c.pm2_5 === 'number') state.air.pm25 = Number(c.pm2_5.toFixed(1));
+        if (typeof c.pm10 === 'number') state.air.pm10 = Number(c.pm10.toFixed(1));
+        if (typeof c.nitrogen_dioxide === 'number') state.air.no2 = Number(c.nitrogen_dioxide.toFixed(1));
+        state.air.source = 'Open-Meteo Live';
+      }
+
+      if (wxData && wxData.current) {
+        const w = wxData.current;
+        if (typeof w.wind_speed_10m === 'number') {
+          const spd = Math.max(2, Math.round(w.wind_speed_10m));
+          state.air.windKmh = spd;
+          state.windSpeedKmh = spd;
+        }
+        if (typeof w.wind_direction_10m === 'number') {
+          const deg = Math.round(w.wind_direction_10m);
+          state.air.windDeg = deg;
+          state.windDeg = deg;
+        }
+        if (typeof w.temperature_2m === 'number') {
+          state.air.tempC = Number(w.temperature_2m.toFixed(1));
+        }
+      }
+
+      state.location.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      renderAll();
+    }
+
+    /**
+     * Request browser GPS with immediate fallback to anchor coordinates (never blocks UI)
+     */
+    async function fetchLiveLocation(showFeedback = false) {
+      state.location.updatedAt = 'Locating...';
+      renderHeaderAndBanner();
+
+      if (!navigator.geolocation) {
+        state.location.source = 'ANCHOR FALLBACK';
+        state.location.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        await enrichLocationData(state.location.lat, state.location.lon);
+        if (showFeedback) showToast('Geolocation Unavailable', 'Using Kannampalayam / Coimbatore anchor telemetry.', 'warn');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          state.location.lat = Number(pos.coords.latitude.toFixed(4));
+          state.location.lon = Number(pos.coords.longitude.toFixed(4));
+          state.location.accuracyM = Math.round(pos.coords.accuracy || 25);
+          state.location.source = 'LIVE GPS';
+          state.location.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          state.origin = `Live GPS (${state.location.lat.toFixed(3)}, ${state.location.lon.toFixed(3)})`;
+          renderAll();
+          await enrichLocationData(state.location.lat, state.location.lon);
+          if (showFeedback) {
+            showToast('Live GPS Updated', `${state.location.placeName} (±${state.location.accuracyM}m)`);
+          }
+        },
+        async () => {
+          state.location.source = 'ANCHOR FALLBACK';
+          state.location.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          await enrichLocationData(state.location.lat, state.location.lon);
+          if (showFeedback) {
+            showToast('Using Anchor Location', `${state.location.placeName} (${state.location.lat}, ${state.location.lon})`, 'warn');
+          }
+        },
+        { enableHighAccuracy: true, timeout: 4500, maximumAge: 15000 }
+      );
+
+      if (watchPositionId === null) {
+        try {
+          watchPositionId = navigator.geolocation.watchPosition(
+            (pos) => {
+              if (!/^LIVE/.test(state.location.source)) return; // don't override chosen corridor/custom coords
+              state.location.lat = Number(pos.coords.latitude.toFixed(4));
+              state.location.lon = Number(pos.coords.longitude.toFixed(4));
+              state.location.accuracyM = Math.round(pos.coords.accuracy || 25);
+              state.location.source = 'LIVE WATCH';
+              state.location.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              renderHeaderAndBanner();
+            },
+            () => {},
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 20000 }
+          );
+        } catch (_) {}
+      }
+    }
+
+    /**
+     * Compute dynamic scores for all 3 routes based on current telemetry & settings
+     */
+    function computeCorridorRoutes() {
+      const T = state.trip;
+      const kmOf = (d, f) => (T ? Number((T.km * f).toFixed(1)) : d);
+      const minOf = (d, f) => (T ? Math.max(5, Math.round(T.min * f)) : d);
+      const prof = HEALTH_PROFILES[state.healthProfile] || HEALTH_PROFILES.standard;
+      const healthMult = prof.multiplier * ((state.customPmWeight + state.customNo2Weight) / 2);
+      const simMult = state.demoSimEnabled ? 1.0 : 0.85;
+      const windFactor = Math.max(0.76, Math.min(1.18, 1.06 - (state.windSpeedKmh - 10) * 0.01));
+      const canyonFactor = 0.85 + (state.canyonRatio - 1.0) * 0.16;
+      const idleFactor = 1 + (state.idlingPct - 20) * 0.008;
+
+      const hazardPenalty = state.hazards.reduce((sum, h) => {
+        const decay = Math.max(0.3, 1 - h.ageMin / 120);
+        return sum + h.aqiBoost * h.trust * decay * simMult;
+      }, 0);
+
+      const timeShiftFactor = state.departShiftMin >= 15 && state.departShiftMin <= 60 ? 0.9 : 1.0;
+
+      const baseSet = [
+        {
+          id: 'cleanest',
+          name: 'Cleanest Air Route',
+          badge: 'Lowest Exposure',
+          color: '#10b981',
+          baseMin: minOf(24, 1.6),
+          baseKm: kmOf(9.4, 1.27),
+          baseScore: Math.round((state.air.aqi * 0.64) * windFactor * timeShiftFactor * healthMult + hazardPenalty * 0.15),
+          idlingScore: Math.max(8, Math.round(state.idlingPct * 0.45)),
+          windDispersionPct: Math.min(95, Math.round(58 + state.windSpeedKmh * 2.1)),
+          heavyVehiclesPerHr: Math.max(12, Math.round(35 * simMult)),
+          canyonTrapIndex: Math.max(15, Math.round((state.canyonRatio * 24) * 0.7)),
+          reasons: [
+            'Bypasses high-idling arterial intersections and commercial freight lanes',
+            'Benefits from crosswind dispersion and open tree-lined street cross-section',
+            'Lowest cumulative PM2.5 and NO2 intake for the selected health profile'
+          ]
+        },
+        {
+          id: 'balanced',
+          name: 'Balanced Route',
+          badge: 'Time + Air Trade-Off',
+          color: '#06b6d4',
+          baseMin: minOf(19, 1.27),
+          baseKm: kmOf(8.1, 1.1),
+          baseScore: Math.round((state.air.aqi * 0.86) * windFactor * canyonFactor * timeShiftFactor * healthMult + hazardPenalty * 0.45),
+          idlingScore: Math.max(15, Math.round(state.idlingPct * 0.85)),
+          windDispersionPct: Math.min(88, Math.round(44 + state.windSpeedKmh * 1.6)),
+          heavyVehiclesPerHr: Math.max(25, Math.round(90 * simMult)),
+          canyonTrapIndex: Math.min(92, Math.round(state.canyonRatio * 34)),
+          reasons: [
+            'Trims ~5 minutes versus the cleanest bypass while avoiding peak smoke zones',
+            'Moderate stop-and-go signal density with partial wind ventilation',
+            'Solid middle ground when arriving on a tighter schedule'
+          ]
+        },
+        {
+          id: 'fastest',
+          name: 'Fastest Route',
+          badge: 'Shortest ETA • Higher Plume',
+          color: '#f59e0b',
+          baseMin: minOf(15, 1),
+          baseKm: kmOf(7.4, 1),
+          baseScore: Math.round((state.air.aqi * 1.18) * windFactor * canyonFactor * idleFactor * timeShiftFactor * healthMult + hazardPenalty),
+          idlingScore: Math.min(96, Math.round(state.idlingPct * 1.45)),
+          windDispersionPct: Math.max(18, Math.round(28 + state.windSpeedKmh * 0.9)),
+          heavyVehiclesPerHr: Math.max(60, Math.round(240 * simMult)),
+          canyonTrapIndex: Math.min(98, Math.round(state.canyonRatio * 46 + state.idlingPct * 0.4)),
+          reasons: [
+            'Fastest travel time along main corridor, but higher stop-and-go exhaust idling',
+            'Higher heavy-vehicle share and street-canyon plume retention near bottlenecks',
+            'Elevated PM2.5 & NO2 exposure if traveling during congestion or hazard alerts'
+          ]
+        }
+      ];
+
+      return baseSet.map((r) => {
+        const score = Math.max(16, r.baseScore);
+        const pm25Est = Number((state.air.pm25 * (score / Math.max(25, state.air.aqi))).toFixed(1));
+        const no2Est = Number((state.air.no2 * (score / Math.max(25, state.air.aqi))).toFixed(1));
+        const minutes = Math.max(8, Math.round(r.baseMin * (state.demoSimEnabled ? 1 : 0.92)));
+        return { ...r, score, pm25Est, no2Est, minutes };
+      });
+    }
+
+    /**
+     * Render Header & Sub-Page Location Telemetry Banner
+     */
+    function renderHeaderAndBanner() {
+      const loc = state.location;
+      const air = state.air;
+      const headerPlace = document.getElementById('headerPlaceName');
+      const headerSrc = document.getElementById('headerSourceBadge');
+      const headerCoords = document.getElementById('headerCoordsText');
+
+      if (headerPlace) headerPlace.textContent = loc.placeName;
+      if (headerSrc) headerSrc.textContent = loc.source;
+      if (headerCoords) {
+        headerCoords.textContent = `${loc.lat.toFixed(4)}° N, ${loc.lon.toFixed(4)}° E • AQI ${air.aqi} • PM2.5 ${air.pm25} µg/m³`;
+      }
+
+      const bannerTitle = document.getElementById('bannerLocationTitle');
+      const bannerTag = document.getElementById('bannerSourceTag');
+      const bannerSync = document.getElementById('bannerSyncStatus');
+      const bannerStats = document.getElementById('bannerTelemetryStats');
+
+      if (bannerTitle) bannerTitle.textContent = `Live Location Telemetry — ${loc.placeName}`;
+      if (bannerTag) bannerTag.textContent = `${loc.source} • ±${loc.accuracyM}m`;
+      if (bannerSync) bannerSync.textContent = `Updated: ${loc.updatedAt}`;
+      if (bannerStats) {
+        bannerStats.innerHTML = `
+          <div class="p-2 rounded-lg bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-slate-400 block text-[10px]">COORDINATES</span>
+            <span class="text-cyan-300 font-bold">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-slate-400 block text-[10px]">LOCAL AQI</span>
+            <span class="text-emerald-300 font-bold">${air.aqi} AQI</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-slate-400 block text-[10px]">PM2.5 / NO2</span>
+            <span class="text-amber-300 font-bold">${air.pm25} µg / ${air.no2} ppb</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-slate-400 block text-[10px]">WIND VECTOR</span>
+            <span class="text-sky-300 font-bold">${state.windSpeedKmh} km/h @ ${state.windDeg}°</span>
+          </div>
+          <div class="p-2 rounded-lg bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-slate-400 block text-[10px]">AMBIENT TEMP</span>
+            <span class="text-purple-300 font-bold">${air.tempC}°C</span>
+          </div>
+        `;
+      }
+
+      const latInp = document.getElementById('customLatInput');
+      const lonInp = document.getElementById('customLonInput');
+      if (latInp && document.activeElement !== latInp) latInp.value = loc.lat;
+      if (lonInp && document.activeElement !== lonInp) lonInp.value = loc.lon;
+    }
+
+    /**
+     * Draw grid lines on the SVG corridor map and highlight selected route
+     */
+    function renderCorridorMap(routes) {
+      const gridLayer = document.getElementById('mapGridLayer');
+      if (gridLayer && gridLayer.childElementCount === 0) {
+        let linesHtml = '';
+        for (let x = 40; x < 800; x += 40) {
+          linesHtml += `<line x1="${x}" y1="0" x2="${x}" y2="400" />`;
+        }
+        for (let y = 40; y < 400; y += 40) {
+          linesHtml += `<line x1="0" y1="${y}" x2="800" y2="${y}" />`;
+        }
+        gridLayer.innerHTML = linesHtml;
+      }
+
+      const selectedId = state.selectedRouteId;
+      const pathMap = {
+        cleanest: document.getElementById('svgPathCleanest'),
+        balanced: document.getElementById('svgPathBalanced'),
+        fastest: document.getElementById('svgPathFastest')
+      };
+
+      Object.entries(pathMap).forEach(([id, el]) => {
+        if (!el) return;
+        const isSelected = id === selectedId;
+        el.setAttribute('stroke-width', isSelected ? '9' : '5');
+        el.setAttribute('opacity', isSelected ? '1' : '0.48');
+      });
+
+      const hotspotLabel = document.getElementById('mapHotspotLabel');
+      if (hotspotLabel) {
+        hotspotLabel.textContent = state.demoSimEnabled
+          ? `Idling & Plume (${state.windSpeedKmh} km/h)`
+          : 'Baseline Traffic Flow';
+      }
+
+      const headline = document.getElementById('mapHeadlineTitle');
+      if (headline) {
+        headline.textContent = `${state.location.placeName} → ${state.destination}`;
+      }
+
+      renderLeafletMap();
+    }
+
+    /**
+     * Render Route Cards & "Why This Road Is Cleaner" Explainability Panel
+     */
+    function renderRouteCardsAndExplainability(routes) {
+      const listEl = document.getElementById('routeCardsList');
+      const deltaPill = document.getElementById('exposureDeltaPill');
+      const badgeEl = document.getElementById('selectedRouteBadge');
+      const summaryEl = document.getElementById('explainabilitySummaryText');
+      const gridEl = document.getElementById('explainabilityMetricsGrid');
+
+      const cleanest = routes.find((r) => r.id === 'cleanest') || routes[0];
+      const fastest = routes.find((r) => r.id === 'fastest') || routes[routes.length - 1];
+      const selected = routes.find((r) => r.id === state.selectedRouteId) || cleanest;
+
+      if (deltaPill && fastest) {
+        const pctDiff = Math.max(5, Math.round(((fastest.score - cleanest.score) / Math.max(1, fastest.score)) * 100));
+        deltaPill.textContent = `-${pctDiff}% Cleanest vs Fastest`;
+      }
+
+      if (listEl) {
+        listEl.innerHTML = routes
+          .map((r) => {
+            const active = r.id === selected.id;
+            return `
+              <button
+                type="button"
+                data-select-route="${r.id}"
+                class="w-full p-3 rounded-xl border text-left transition flex items-center justify-between gap-3 ${
+                  active
+                    ? 'bg-[#152442] border-cyan-400 shadow-md'
+                    : 'bg-[#080f1c] hover:bg-[#0e192e] border-[#1e2d4a]'
+                }"
+              >
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${r.color}"></span>
+                    <span class="text-xs sm:text-sm font-bold text-white truncate">${escapeHtml(r.name)}</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-0.5 truncate">${escapeHtml(r.badge)} • PM2.5 ${r.pm25Est} µg/m³</p>
+                </div>
+                <div class="text-right shrink-0 font-mono-code">
+                  <div class="text-xs sm:text-sm font-bold text-white">${r.minutes} min • ${r.baseKm} km</div>
+                  <div class="text-[11px]" style="color:${r.color}">Exposure ${r.score}</div>
+                </div>
+              </button>
+            `;
+          })
+          .join('');
+      }
+
+      if (badgeEl) {
+        badgeEl.textContent = selected.name;
+        badgeEl.style.color = selected.color;
+      }
+
+      if (summaryEl) {
+        summaryEl.textContent = `${selected.name} scores ${selected.score} exposure units (${selected.pm25Est} µg/m³ PM2.5, ${selected.no2Est} ppb NO2) over ${selected.minutes} min around ${state.location.placeName}. ${selected.reasons[0]}.`;
+      }
+
+      if (gridEl) {
+        gridEl.innerHTML = `
+          <div class="p-2.5 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-[10px] font-mono-code text-slate-400 block">TRAFFIC IDLING PENALTY</span>
+            <span class="text-sm font-mono-code font-bold text-amber-300">${selected.idlingScore}%</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-[10px] font-mono-code text-slate-400 block">CROSSWIND DISPERSION</span>
+            <span class="text-sm font-mono-code font-bold text-emerald-300">${selected.windDispersionPct}%</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-[10px] font-mono-code text-slate-400 block">HEAVY VEHICLES / HR</span>
+            <span class="text-sm font-mono-code font-bold text-rose-300">${selected.heavyVehiclesPerHr} / hr</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+            <span class="text-[10px] font-mono-code text-slate-400 block">STREET CANYON FACTOR</span>
+            <span class="text-sm font-mono-code font-bold text-cyan-300">${selected.canyonTrapIndex}/100 (${state.canyonRatio.toFixed(1)}x)</span>
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * Render Dedicated Sub-Page Body for Each of the 10 Hamburger Menu Features
+     */
+    function renderSubPageBody(routes) {
+      const view = state.activeView;
+      const meta = SUBPAGE_META[view];
+      const bodyEl = document.getElementById('featureDynamicBody');
+      if (!meta || !bodyEl) return;
+
+      document.getElementById('subPageTag').textContent = meta.tag;
+      document.getElementById('subPageTitle').textContent = meta.title;
+
+      const cleanest = routes.find((r) => r.id === 'cleanest') || routes[0];
+      const fastest = routes.find((r) => r.id === 'fastest') || routes[routes.length - 1];
+
+      if (view === 'mode-shift') {
+        const shiftFactor = state.departShiftMin >= 15 && state.departShiftMin <= 60 ? 0.9 : 1.0;
+        const shiftedScore = Math.round(cleanest.score * shiftFactor);
+        bodyEl.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-6 surface-card p-4 space-y-3">
+              <h2 class="text-sm font-bold text-white">Departure Time Shift Optimizer</h2>
+              <p class="text-xs text-slate-400">Adjust departure shift from now to cut peak diesel/commuter congestion near ${escapeHtml(state.location.placeName)}.</p>
+              <div class="flex items-center justify-between font-mono-code text-xs">
+                <span class="text-cyan-300">Shift: ${state.departShiftMin >= 0 ? '+' : ''}${state.departShiftMin} min</span>
+                <span class="text-emerald-300">Projected Clean Score: ${shiftedScore}</span>
+              </div>
+              <input id="departShiftSlider" type="range" min="-30" max="120" step="5" value="${state.departShiftMin}" class="w-full accent-cyan-400 cursor-pointer" />
+              <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] text-xs text-slate-300">
+                ${state.departShiftMin >= 15 && state.departShiftMin <= 60
+                  ? 'Optimal low-congestion window active: ~10% lower tailpipe exposure than immediate peak departure.'
+                  : 'Tip: Shifting departure by +20 to +45 min typically clears peak arterial stop-and-go plumes.'}
+              </div>
+            </div>
+
+            <div class="lg:col-span-6 surface-card p-4 space-y-2.5">
+              <h2 class="text-sm font-bold text-white">Travel Mode Comparison (${escapeHtml(state.location.placeName)})</h2>
+              <div class="p-3 rounded-xl bg-[#070d18] border border-emerald-500/30 flex items-center justify-between text-xs">
+                <div>
+                  <p class="font-bold text-white">Cleanest Road Drive</p>
+                  <p class="text-slate-400">${cleanest.minutes} min • ${cleanest.baseKm} km • Low-idling bypass</p>
+                </div>
+                <span class="font-mono-code font-bold text-emerald-300">Exp ${cleanest.score}</span>
+              </div>
+              <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] flex items-center justify-between text-xs">
+                <div>
+                  <p class="font-bold text-white">Metro / Rapid Bus Transit</p>
+                  <p class="text-slate-400">${cleanest.minutes + 6} min • Enclosed cabin away from street canyon</p>
+                </div>
+                <span class="font-mono-code font-bold text-cyan-300">Exp ${Math.max(14, Math.round(cleanest.score * 0.65))}</span>
+              </div>
+              <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] flex items-center justify-between text-xs">
+                <div>
+                  <p class="font-bold text-white">Greenway Cycle Corridor</p>
+                  <p class="text-slate-400">${Math.round(cleanest.baseKm * 3.6)} min • Buffered green lane (higher breath rate)</p>
+                </div>
+                <span class="font-mono-code font-bold text-emerald-300">Exp ${Math.max(15, Math.round(cleanest.score * 0.78))}</span>
+              </div>
+              <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] flex items-center justify-between text-xs">
+                <div>
+                  <p class="font-bold text-white">Shaded Pedestrian Corridor</p>
+                  <p class="text-slate-400">${Math.round(cleanest.baseKm * 11)} min • Best for short &amp; last-mile segments</p>
+                </div>
+                <span class="font-mono-code font-bold text-sky-300">Exp ${Math.max(12, Math.round(cleanest.score * 0.6))}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        const slider = document.getElementById('departShiftSlider');
+        if (slider) {
+          slider.addEventListener('change', (e) => {
+            state.departShiftMin = Number(e.target.value);
+            savePrefs();
+            renderAll();
+          });
+        }
+      } else if (view === 'health-profile') {
+        const curProf = HEALTH_PROFILES[state.healthProfile] || HEALTH_PROFILES.standard;
+        const estIntakeUg = Number(((cleanest.pm25Est * cleanest.minutes) / 60 * curProf.multiplier * state.customPmWeight).toFixed(2));
+        bodyEl.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-6 surface-card p-4 space-y-3">
+              <h2 class="text-sm font-bold text-white">Select Commuter Sensitivity Profile</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${Object.entries(HEALTH_PROFILES).map(([key, p]) => {
+                  const active = state.healthProfile === key;
+                  return `
+                    <button type="button" data-health-key="${key}" class="health-prof-btn p-3 rounded-xl border text-left transition ${
+                      active ? 'bg-[#152442] border-cyan-400 text-white' : 'bg-[#070d18] border-[#1e2d4a] text-slate-300'
+                    }">
+                      <p class="text-xs font-bold">${escapeHtml(p.label)}</p>
+                      <p class="font-mono-code text-[11px] text-cyan-300 mt-0.5">${p.multiplier}x sensitivity</p>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+              <p class="text-xs text-slate-300 p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a]">${escapeHtml(curProf.note)}</p>
+            </div>
+
+            <div class="lg:col-span-6 surface-card p-4 space-y-3">
+              <h2 class="text-sm font-bold text-white">Custom Pollutant Weights &amp; Trip Intake</h2>
+              <div>
+                <div class="flex justify-between font-mono-code text-xs mb-1">
+                  <span class="text-slate-300">PM2.5 Weight</span>
+                  <span class="text-emerald-300">${state.customPmWeight.toFixed(1)}x</span>
+                </div>
+                <input id="pmWeightSlider" type="range" min="0.5" max="2.0" step="0.1" value="${state.customPmWeight}" class="w-full accent-emerald-400 cursor-pointer" />
+              </div>
+              <div>
+                <div class="flex justify-between font-mono-code text-xs mb-1">
+                  <span class="text-slate-300">NO2 Irritant Weight</span>
+                  <span class="text-amber-300">${state.customNo2Weight.toFixed(1)}x</span>
+                </div>
+                <input id="no2WeightSlider" type="range" min="0.5" max="2.0" step="0.1" value="${state.customNo2Weight}" class="w-full accent-amber-400 cursor-pointer" />
+              </div>
+              <div class="p-3.5 rounded-xl bg-[#070d18] border border-[#1e2d4a] flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-mono-code text-slate-400 block">EST. CLEAN ROUTE PM2.5 INTAKE</span>
+                  <span class="text-lg font-mono-code font-bold text-emerald-300">${estIntakeUg} µg</span>
+                </div>
+                <span class="text-xs text-slate-400">${cleanest.minutes} min trip</span>
+              </div>
+            </div>
+          </div>
+        `;
+        bodyEl.querySelectorAll('.health-prof-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.healthProfile = btn.getAttribute('data-health-key');
+            savePrefs();
+            renderAll();
+          });
+        });
+        document.getElementById('pmWeightSlider')?.addEventListener('change', (e) => {
+          state.customPmWeight = Number(e.target.value);
+          savePrefs();
+          renderAll();
+        });
+        document.getElementById('no2WeightSlider')?.addEventListener('change', (e) => {
+          state.customNo2Weight = Number(e.target.value);
+          savePrefs();
+          renderAll();
+        });
+      } else if (view === 'crowd-fusion') {
+        bodyEl.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-5 surface-card p-4 space-y-3">
+              <h2 class="text-sm font-bold text-white">Submit Local Hazard Report</h2>
+              <p class="text-xs text-slate-400">Pins report to current coordinates (${state.location.lat.toFixed(4)}, ${state.location.lon.toFixed(4)}).</p>
+              <select id="hazardTypeSelect" class="w-full px-3 py-2 rounded-xl bg-[#070d18] border border-[#1e2d4a] text-xs text-white">
+                <option value="Waste / Biomass Smoke">Waste / Biomass Smoke (+32 AQI)</option>
+                <option value="Heavy Diesel Gridlock">Heavy Diesel Gridlock (+24 AQI)</option>
+                <option value="Road Dust / Construction">Road Dust / Construction (+18 AQI)</option>
+                <option value="Industrial Plume Drift">Industrial Plume Drift (+28 AQI)</option>
+              </select>
+              <input id="hazardZoneInput" type="text" value="${escapeHtml(state.location.placeName)}" class="w-full px-3 py-2 rounded-xl bg-[#070d18] border border-[#1e2d4a] text-xs text-white" />
+              <div class="flex gap-2">
+                <button id="submitHazardBtn" type="button" class="flex-1 py-2.5 px-3 rounded-xl accent-btn text-xs">
+                  Fuse Hazard Report
+                </button>
+                <button id="clearHazardsBtn" type="button" class="py-2.5 px-3 rounded-xl bg-[#132038] hover:bg-[#1a2c4d] border border-[#1e2d4a] text-xs text-slate-200">
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            <div class="lg:col-span-7 surface-card p-4 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <h2 class="text-sm font-bold text-white">Fused Crowd &amp; Sensor Reports (${state.hazards.length})</h2>
+                <span class="font-mono-code text-[11px] text-amber-300">Time-Decay Weighting Active</span>
+              </div>
+              ${state.hazards.length === 0
+                ? `<p class="text-xs text-slate-400 p-4 rounded-xl bg-[#070d18] border border-[#1e2d4a]">No active hazard reports. Add a local report on the left or use Re-fetch GPS.</p>`
+                : state.hazards.map((h) => {
+                    const decay = Math.max(0.3, Number((1 - h.ageMin / 120).toFixed(2)));
+                    const effectiveBoost = Math.round(h.aqiBoost * h.trust * decay);
+                    return `
+                      <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] flex items-center justify-between gap-3 text-xs">
+                        <div>
+                          <p class="font-bold text-white">${escapeHtml(h.type)} — <span class="text-cyan-300">${escapeHtml(h.zone)}</span></p>
+                          <p class="font-mono-code text-[11px] text-slate-400 mt-0.5">
+                            ${h.lat.toFixed(3)}, ${h.lon.toFixed(3)} • Age ${h.ageMin}m • Trust ${Math.round(h.trust * 100)}% • Decay ${decay}x
+                          </p>
+                        </div>
+                        <span class="font-mono-code font-bold text-rose-300 shrink-0">+${effectiveBoost} AQI</span>
+                      </div>
+                    `;
+                  }).join('')
+              }
+            </div>
+          </div>
+        `;
+        document.getElementById('submitHazardBtn')?.addEventListener('click', () => {
+          const typeVal = document.getElementById('hazardTypeSelect')?.value || 'Heavy Diesel Gridlock';
+          const zoneVal = document.getElementById('hazardZoneInput')?.value || state.location.placeName;
+          const boost = typeVal.includes('Smoke') ? 32 : typeVal.includes('Industrial') ? 28 : typeVal.includes('Dust') ? 18 : 24;
+          state.hazards.unshift({
+            id: `h_${Date.now()}`,
+            type: typeVal,
+            zone: zoneVal,
+            lat: state.location.lat,
+            lon: state.location.lon,
+            ageMin: 1,
+            trust: 0.9,
+            aqiBoost: boost
+          });
+          showToast('Hazard Fused', `${typeVal} pinned at ${zoneVal}`);
+          renderAll();
+        });
+        document.getElementById('clearHazardsBtn')?.addEventListener('click', () => {
+          state.hazards = [];
+          showToast('Hazards Cleared', 'All local crowd hazard reports removed.');
+          renderAll();
+        });
+      } else if (view === 'explainability') {
+        bodyEl.innerHTML = `
+          <div class="surface-card p-4 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h2 class="text-sm font-bold text-white">Cleanest Route vs. Fastest Route Breakdown</h2>
+              <span class="font-mono-code text-xs text-emerald-300">
+                Exposure Delta: ${cleanest.score} vs ${fastest.score} (${fastest.score - cleanest.score} pts lower)
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              ${routes.map((r) => `
+                <div class="p-3.5 rounded-xl bg-[#070d18] border border-[#1e2d4a] space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-white">${escapeHtml(r.name)}</span>
+                    <span class="font-mono-code font-bold" style="color:${r.color}">${r.score} pts</span>
+                  </div>
+                  <p class="font-mono-code text-[11px] text-slate-400">${r.minutes} min • ${r.baseKm} km • PM2.5 ${r.pm25Est} µg/m³</p>
+                  <ul class="space-y-1 text-slate-300">
+                    ${r.reasons.map((item) => `<li>• ${escapeHtml(item)}</li>`).join('')}
+                  </ul>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (view === 'clean-streak') {
+        bodyEl.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-5 surface-card p-4 space-y-3">
+              <h2 class="text-sm font-bold text-white">Your Clean-Air Commute Streak</h2>
+              <div class="grid grid-cols-3 gap-2 font-mono-code">
+                <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+                  <span class="text-[10px] text-slate-400 block">STREAK</span>
+                  <span class="text-lg font-bold text-emerald-300">${state.streakDays}d</span>
+                </div>
+                <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+                  <span class="text-[10px] text-slate-400 block">PM2.5 SAVED</span>
+                  <span class="text-lg font-bold text-cyan-300">${state.pmAvoidedTotalUg.toFixed(1)}µg</span>
+                </div>
+                <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+                  <span class="text-[10px] text-slate-400 block">CO2 SAVED</span>
+                  <span class="text-lg font-bold text-amber-300">${state.co2SavedKg.toFixed(1)}kg</span>
+                </div>
+              </div>
+              <button id="logCleanCommuteBtn" type="button" class="w-full py-2.5 px-4 rounded-xl accent-btn text-xs">
+                + Log Clean Route Choice Today
+              </button>
+            </div>
+            <div class="lg:col-span-7 surface-card p-4 space-y-2">
+              <h2 class="text-sm font-bold text-white">Recent Clean-Air Impact Log</h2>
+              ${state.streakHistory.map((entry) => `
+                <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] text-xs text-slate-200">${escapeHtml(entry)}</div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        document.getElementById('logCleanCommuteBtn')?.addEventListener('click', () => {
+          const gainUg = Number((Math.max(2.1, (fastest.pm25Est - cleanest.pm25Est) * 0.45)).toFixed(1));
+          const gainCo2 = 1.4;
+          state.streakDays += 1;
+          state.pmAvoidedTotalUg = Number((state.pmAvoidedTotalUg + gainUg).toFixed(1));
+          state.co2SavedKg = Number((state.co2SavedKg + gainCo2).toFixed(1));
+          state.streakHistory.unshift(`Logged at ${state.location.placeName}: Cleanest route saved ${gainUg} µg PM2.5 & ${gainCo2} kg CO2`);
+          savePrefs();
+          showToast('Clean Trip Logged', `+${gainUg} µg PM2.5 avoided • ${state.streakDays}-day streak`);
+          renderAll();
+        });
+      } else if (view === 'plume-radar') {
+        const trapIndex = Math.min(99, Math.round(state.canyonRatio * 35 + state.idlingPct * 0.8));
+        bodyEl.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-6 surface-card p-4 space-y-3">
+              <h2 class="text-sm font-bold text-white">Wind &amp; Street Canyon Controls</h2>
+              <div>
+                <div class="flex justify-between font-mono-code text-xs mb-1">
+                  <span class="text-slate-300">Wind Speed</span>
+                  <span class="text-sky-300">${state.windSpeedKmh} km/h</span>
+                </div>
+                <input id="windSpeedSlider" type="range" min="2" max="35" step="1" value="${state.windSpeedKmh}" class="w-full accent-sky-400 cursor-pointer" />
+              </div>
+              <div>
+                <div class="flex justify-between font-mono-code text-xs mb-1">
+                  <span class="text-slate-300">Street Canyon Height/Width Ratio</span>
+                  <span class="text-amber-300">${state.canyonRatio.toFixed(1)}x</span>
+                </div>
+                <input id="canyonRatioSlider" type="range" min="0.6" max="2.8" step="0.1" value="${state.canyonRatio}" class="w-full accent-amber-400 cursor-pointer" />
+              </div>
+              <div>
+                <div class="flex justify-between font-mono-code text-xs mb-1">
+                  <span class="text-slate-300">Stop-and-Go Idling Share</span>
+                  <span class="text-rose-300">${state.idlingPct}%</span>
+                </div>
+                <input id="idlingPctSlider" type="range" min="5" max="60" step="1" value="${state.idlingPct}" class="w-full accent-rose-400 cursor-pointer" />
+              </div>
+            </div>
+
+            <div class="lg:col-span-6 surface-card p-4 flex flex-col justify-between space-y-3">
+              <div>
+                <h2 class="text-sm font-bold text-white">Plume Trapping Radar — ${escapeHtml(state.location.placeName)}</h2>
+                <p class="text-xs text-slate-400 mt-1">Narrow buildings + low wind trap tailpipe NO2 and PM2.5 near street level.</p>
+                <div class="mt-4 p-4 rounded-xl bg-[#070d18] border border-[#1e2d4a] flex items-center justify-between">
+                  <div>
+                    <span class="font-mono-code text-[10px] text-slate-400 block">CANYON TRAPPING INDEX</span>
+                    <span class="text-2xl font-mono-code font-bold text-amber-300">${trapIndex} / 100</span>
+                  </div>
+                  <div class="text-right font-mono-code text-xs text-slate-300">
+                    <div>Wind: ${state.windSpeedKmh} km/h @ ${state.windDeg}°</div>
+                    <div>Canyon: ${state.canyonRatio.toFixed(1)}x</div>
+                  </div>
+                </div>
+              </div>
+              <button type="button" data-open-page="map" class="w-full py-2.5 px-4 rounded-xl accent-btn text-xs">
+                Inspect Updated Routes on Map →
+              </button>
+            </div>
+          </div>
+        `;
+        document.getElementById('windSpeedSlider')?.addEventListener('change', (e) => {
+          state.windSpeedKmh = Number(e.target.value);
+          savePrefs();
+          renderAll();
+        });
+        document.getElementById('canyonRatioSlider')?.addEventListener('change', (e) => {
+          state.canyonRatio = Number(e.target.value);
+          savePrefs();
+          renderAll();
+        });
+        document.getElementById('idlingPctSlider')?.addEventListener('change', (e) => {
+          state.idlingPct = Number(e.target.value);
+          savePrefs();
+          renderAll();
+        });
+        bodyEl.querySelectorAll('[data-open-page]').forEach((btn) => {
+          btn.addEventListener('click', () => openView(btn.getAttribute('data-open-page')));
+        });
+      } else if (view === 'school-safe') {
+        const zones = [
+          { name: 'Regional Public High School & Playground', distKm: 0.7, type: 'School Buffer', status: 'Cleanest Route Buffers 320m Away' },
+          { name: 'Community Health & Respiratory Clinic', distKm: 1.2, type: 'Hospital Zone', status: 'Low-Idling Approach Recommended' },
+          { name: 'Botanical Greenway & Park Belt', distKm: 1.6, type: 'Green Safe Zone', status: 'Crosswind Dilution Active' }
+        ];
+        bodyEl.innerHTML = `
+          <div class="surface-card p-4 space-y-3">
+            <h2 class="text-sm font-bold text-white">Sensitive Zones Near ${escapeHtml(state.location.placeName)}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              ${zones.map((z) => `
+                <div class="p-3.5 rounded-xl bg-[#070d18] border border-[#1e2d4a] space-y-1.5">
+                  <span class="font-mono-code text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">${escapeHtml(z.type)}</span>
+                  <p class="font-bold text-white pt-1">${escapeHtml(z.name)}</p>
+                  <p class="font-mono-code text-slate-400">Approx. ${z.distKm} km from active anchor</p>
+                  <p class="text-emerald-300">${escapeHtml(z.status)}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (view === 'eco-cost') {
+        bodyEl.innerHTML = `
+          <div class="surface-card p-4 space-y-3">
+            <h2 class="text-sm font-bold text-white">True Cost Ledger (Fuel + Tailpipe CO2 + Health Exposure)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono-code">
+              ${routes.map((r) => {
+                const fuelCost = (r.baseKm * 0.085).toFixed(2);
+                const co2Kg = (r.baseKm * 0.165).toFixed(2);
+                const healthCost = (r.score * 0.04).toFixed(2);
+                return `
+                  <div class="p-3.5 rounded-xl bg-[#070d18] border border-[#1e2d4a] space-y-1.5">
+                    <p class="font-sans font-bold text-sm text-white">${escapeHtml(r.name)}</p>
+                    <p class="text-cyan-300">Est. Energy/Fuel: $${fuelCost}</p>
+                    <p class="text-amber-300">Tailpipe CO2: ${co2Kg} kg</p>
+                    <p class="text-emerald-300">Exposure Cost Index: $${healthCost}</p>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      } else if (view === 'offline-cache') {
+        bodyEl.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-6 surface-card p-4 space-y-3">
+              <h2 class="text-sm font-bold text-white">Demo / Hotspot Simulation Toggle</h2>
+              <p class="text-xs text-slate-400">Turn Demo Simulation OFF to evaluate baseline/live telemetry without simulated congestion boosts.</p>
+              <div class="flex items-center justify-between p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a]">
+                <span class="text-xs font-semibold text-white">Demo &amp; Hotspot Simulation</span>
+                <button id="subPageDemoToggleBtn" type="button" class="px-3 py-1.5 rounded-lg font-mono-code text-xs font-bold accent-btn">
+                  ${state.demoSimEnabled ? 'ENABLED (ON)' : 'DISABLED (OFF)'}
+                </button>
+              </div>
+            </div>
+            <div class="lg:col-span-6 surface-card p-4 space-y-2 text-xs font-mono-code">
+              <h2 class="font-sans text-sm font-bold text-white">Cached Corridor Snapshot</h2>
+              <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] space-y-1 text-slate-300">
+                <p>Anchor: ${escapeHtml(state.location.placeName)} (${state.location.lat.toFixed(4)}, ${state.location.lon.toFixed(4)})</p>
+                <p>Telemetry Source: ${escapeHtml(state.air.source)} • Updated ${escapeHtml(state.location.updatedAt)}</p>
+                <p>Cached Routes: Cleanest (${cleanest.score}) • Balanced (${routes[1]?.score ?? '-'}) • Fastest (${fastest.score})</p>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('subPageDemoToggleBtn')?.addEventListener('click', () => {
+          state.demoSimEnabled = !state.demoSimEnabled;
+          savePrefs();
+          renderAll();
+        });
+      } else if (view === 'copilot-lab') {
+        bodyEl.innerHTML = `
+          <div class="surface-card p-4 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-sm font-bold text-white">GroqCloud Clean-Air Copilot Lab</h2>
+                <p class="text-xs text-slate-400">Connected to current telemetry at ${escapeHtml(state.location.placeName)} with automatic local fallback.</p>
+              </div>
+              <button id="openCopilotFromLabBtn" type="button" class="px-3.5 py-2 rounded-xl accent-btn text-xs">
+                Open Copilot Chat Drawer
+              </button>
+            </div>
+            <div class="p-3 rounded-xl bg-[#070d18] border border-[#1e2d4a] font-mono-code text-xs text-cyan-200">
+              Active Context: ${escapeHtml(state.location.placeName)} (${state.location.lat.toFixed(4)}, ${state.location.lon.toFixed(4)}) | AQI ${state.air.aqi} | PM2.5 ${state.air.pm25} µg/m³ | Cleanest Score ${cleanest.score} vs Fastest ${fastest.score}
+            </div>
+          </div>
+        `;
+        document.getElementById('openCopilotFromLabBtn')?.addEventListener('click', () => setCopilotOpen(true));
+      }
+    }
+
+    /**
+     * Master render function (always renders cleanly)
+     */
+    function renderAll() {
+      const _fid = document.activeElement && document.activeElement.id;
+      const routes = computeCorridorRoutes();
+      renderHeaderAndBanner();
+
+      const mapSec = document.getElementById('mapViewSection');
+      const subSec = document.getElementById('featureSubPageSection');
+      const demoBtn = document.getElementById('demoSimToggleBtn');
+
+      if (demoBtn) {
+        demoBtn.textContent = `Demo Sim: ${state.demoSimEnabled ? 'ON' : 'OFF'}`;
+      }
+
+      const origInp = document.getElementById('originInput');
+      const destInp = document.getElementById('destinationInput');
+      if (origInp && document.activeElement !== origInp) origInp.value = state.origin;
+      if (destInp && document.activeElement !== destInp) destInp.value = state.destination;
+
+      if (state.activeView === 'map') {
+        mapSec?.classList.remove('hidden');
+        subSec?.classList.add('hidden');
+        renderCorridorMap(routes);
+        renderRouteCardsAndExplainability(routes);
+      } else {
+        mapSec?.classList.add('hidden');
+        subSec?.classList.remove('hidden');
+        renderSubPageBody(routes);
+      }
+
+      updateTripInfo();
+      renderCopilotMessages();
+      if (_fid) {
+        const el = document.getElementById(_fid);
+        if (el && el !== document.activeElement && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) el.focus({ preventScroll: true });
+      }
+    }
+
+    /**
+     * Switch between main Map View and any of the 10 dedicated feature sub-pages
+     */
+    function openView(viewName) {
+      if (viewName === 'map' || SUBPAGE_META[viewName]) {
+        state.activeView = viewName;
+        setDrawerOpen(false);
+        renderAll();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    /**
+     * Hamburger Drawer controls
+     */
+    function setDrawerOpen(open) {
+      const drawer = document.getElementById('navDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+      if (!drawer || !backdrop) return;
+      if (open) {
+        backdrop.classList.remove('hidden');
+        drawer.classList.remove('-translate-x-full');
+      } else {
+        drawer.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    /**
+     * Copilot Drawer controls
+     */
+    function setCopilotOpen(open) {
+      const drawer = document.getElementById('copilotDrawer');
+      const backdrop = document.getElementById('copilotBackdrop');
+      if (!drawer || !backdrop) return;
+      if (open) {
+        backdrop.classList.remove('hidden');
+        drawer.classList.remove('translate-x-full');
+        syncCopilotInputs();
+        renderCopilotMessages();
+      } else {
+        drawer.classList.add('translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function syncCopilotInputs() {
+      const keyInp = document.getElementById('groqApiKeyInput');
+      const modelSel = document.getElementById('groqModelSelect');
+      const statusTxt = document.getElementById('groqKeyStatusText');
+      const modeBadge = document.getElementById('copilotModeBadge');
+      if (keyInp) keyInp.value = state.groq.apiKey || '';
+      if (modelSel) modelSel.value = state.groq.model || 'llama-3.3-70b-versatile';
+      const hasKey = Boolean(state.groq.apiKey && state.groq.apiKey.trim().length > 8);
+      if (statusTxt) {
+        statusTxt.textContent = hasKey ? 'GroqCloud Key Saved' : 'Fallback Active';
+        statusTxt.className = `font-mono-code text-[10px] ${hasKey ? 'text-emerald-300' : 'text-amber-300'}`;
+      }
+      if (modeBadge) {
+        modeBadge.textContent = hasKey ? state.groq.model : 'Local Telemetry Engine';
+      }
+    }
+
+    function renderCopilotMessages() {
+      const list = document.getElementById('copilotMessagesList');
+      if (!list) return;
+      list.innerHTML = state.groq.messages
+        .map((m) => {
+          const isUser = m.role === 'user';
+          return `
+            <div class="p-2.5 rounded-xl border ${
+              isUser
+                ? 'bg-cyan-500/15 border-cyan-500/40 text-white ml-6'
+                : 'bg-[#0e1729] border-[#1e2d4a] text-slate-200 mr-4'
+            }">
+              <span class="font-mono-code text-[10px] uppercase ${isUser ? 'text-cyan-300' : 'text-emerald-300'} block mb-0.5">
+                ${isUser ? 'You' : 'Clean-Air Copilot'}
+              </span>
+              <p class="leading-relaxed whitespace-pre-line">${escapeHtml(m.text)}</p>
+            </div>
+          `;
+        })
+        .join('');
+      list.scrollTop = list.scrollHeight;
+    }
+
+    /**
+     * Local deterministic fallback response when GroqCloud API key is unset or unreachable
+     */
+    function buildLocalCopilotReply(promptText) {
+      const routes = computeCorridorRoutes();
+      const cleanest = routes.find((r) => r.id === 'cleanest') || routes[0];
+      const fastest = routes.find((r) => r.id === 'fastest') || routes[routes.length - 1];
+      const savingsPct = Math.max(5, Math.round(((fastest.score - cleanest.score) / Math.max(1, fastest.score)) * 100));
+
+      return [
+        `For ${state.location.placeName} (${state.location.lat.toFixed(3)}, ${state.location.lon.toFixed(3)}), the Cleanest Air Route (${cleanest.score} exposure pts, ${cleanest.minutes} min, PM2.5 ${cleanest.pm25Est} µg/m³) cuts exposure by ~${savingsPct}% versus the Fastest Route (${fastest.score} pts, ${fastest.minutes} min).`,
+        `Current conditions: AQI ${state.air.aqi}, wind ${state.windSpeedKmh} km/h @ ${state.windDeg}°, idling share ${state.idlingPct}%.`,
+        `Recommendation: Take the Cleanest Air Route or shift departure by +20 min; consider metro/bus or greenway cycling if you have respiratory sensitivity.`
+      ].join(' ');
+    }
+
+    /**
+     * Send prompt to GroqCloud Chat Completions API with automatic fallback
+     */
+    async function askCopilot(promptText) {
+      const trimmed = (promptText || '').trim();
+      if (!trimmed) return;
+
+      state.groq.messages.push({ role: 'user', text: trimmed });
+      renderCopilotMessages();
+
+      const apiKey = (state.groq.apiKey || '').trim();
+      if (!apiKey) {
+        const reply = buildLocalCopilotReply(trimmed);
+        state.groq.messages.push({ role: 'assistant', text: `${reply}\n\n[Local fallback — add a GroqCloud API key above for live LLM responses]` });
+        renderCopilotMessages();
+        return;
+      }
+
+      const routes = computeCorridorRoutes();
+      const cleanest = routes.find((r) => r.id === 'cleanest') || routes[0];
+      const fastest = routes.find((r) => r.id === 'fastest') || routes[routes.length - 1];
+
+      const systemContext = `You are AirAware Clean-Air Copilot. Give concise, actionable low-exposure route and mode advice. Telemetry: Place=${state.location.placeName} (${state.location.lat}, ${state.location.lon}), AQI=${state.air.aqi}, PM2.5=${state.air.pm25} ug/m3, Wind=${state.windSpeedKmh} km/h @ ${state.windDeg} deg, Profile=${state.healthProfile}, CleanestRoute=${cleanest.score} pts (${cleanest.minutes} min) vs FastestRoute=${fastest.score} pts (${fastest.minutes} min).`;
+
+      const payload = {
+        model: state.groq.model || 'llama-3.3-70b-versatile',
+        temperature: 0.4,
+        max_tokens: 320,
+        messages: [
+          { role: 'system', content: systemContext },
+          { role: 'user', content: trimmed }
+        ]
+      };
+
+      const data = await safeFetchJson(
+        'https://api.groq.com/openai/v1/chat/completions',
+        6500,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      const aiText = data?.choices?.[0]?.message?.content?.trim();
+      if (aiText) {
+        state.groq.messages.push({ role: 'assistant', text: aiText });
+      } else {
+        const fallback = buildLocalCopilotReply(trimmed);
+        state.groq.messages.push({ role: 'assistant', text: `${fallback}\n\n[GroqCloud unreachable or key invalid — showing local telemetry fallback]` });
+      }
+      renderCopilotMessages();
+    }
+
+    /**
+     * Wire up all interactive DOM listeners once
+     */
+    function bindEvents() {
+      document.getElementById('hamburgerBtn')?.addEventListener('click', () => setDrawerOpen(true));
+      document.getElementById('closeDrawerBtn')?.addEventListener('click', () => setDrawerOpen(false));
+      document.getElementById('drawerBackdrop')?.addEventListener('click', () => setDrawerOpen(false));
+      document.getElementById('brandHomeBtn')?.addEventListener('click', () => openView('map'));
+      document.getElementById('backToMapBtn')?.addEventListener('click', () => openView('map'));
+
+      document.querySelectorAll('[data-open-page]').forEach((btn) => {
+        btn.addEventListener('click', () => openView(btn.getAttribute('data-open-page')));
+      });
+
+      
+      document.getElementById('locateMeHeaderBtn')?.addEventListener('click', () => fetchLiveLocation(true));
+      document.getElementById('refetchGpsBannerBtn')?.addEventListener('click', () => fetchLiveLocation(true));
+
+      document.querySelectorAll('[data-preset]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const key = btn.getAttribute('data-preset');
+          const preset = CORRIDOR_PRESETS[key];
+          if (!preset) return;
+          state.location.placeName = preset.placeName;
+          state.location.lat = preset.lat;
+          state.location.lon = preset.lon;
+          state.location.source = preset.source;
+          state.location.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          state.origin = `${preset.placeName} (${preset.lat}, ${preset.lon})`;
+          renderAll();
+          await enrichLocationData(preset.lat, preset.lon);
+          showToast('Corridor Switched', preset.placeName);
+        });
+      });
+
+      document.getElementById('applyCustomCoordsBtn')?.addEventListener('click', async () => {
+        const latVal = parseFloat(document.getElementById('customLatInput')?.value);
+        const lonVal = parseFloat(document.getElementById('customLonInput')?.value);
+        if (Number.isNaN(latVal) || Number.isNaN(lonVal) || latVal < -90 || latVal > 90 || lonVal < -180 || lonVal > 180) {
+          showToast('Invalid Coordinates', 'Enter valid latitude (-90..90) and longitude (-180..180).', 'warn');
+          return;
+        }
+        state.location.lat = Number(latVal.toFixed(4));
+        state.location.lon = Number(lonVal.toFixed(4));
+        state.location.source = 'CUSTOM COORDS';
+        state.location.placeName = `Custom Point (${state.location.lat.toFixed(3)}, ${state.location.lon.toFixed(3)})`;
+        state.location.updatedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        state.origin = `Custom (${state.location.lat.toFixed(3)}, ${state.location.lon.toFixed(3)})`;
+        renderAll();
+        await enrichLocationData(state.location.lat, state.location.lon);
+        showToast('Coordinates Applied', `${state.location.lat}, ${state.location.lon}`);
+      });
+
+      document.getElementById('recalculateRoutesBtn')?.addEventListener('click', async () => {
+        const orig = document.getElementById('originInput')?.value?.trim();
+        const dest = document.getElementById('destinationInput')?.value?.trim();
+        if (orig) state.origin = orig;
+        if (dest && (dest !== state.destination || !state.destCoords)) {
+          const hits = await searchPlaces(dest);
+          if (hits.length) await selectDestination(hits[0]);
+          else { state.destination = dest; showToast('Place Not Found', 'Pick a suggestion from the list to get distance & time.', 'warn'); }
+        } else if (state.destCoords) {
+          await selectDestination({ name: state.destination, lat: state.destCoords.lat, lon: state.destCoords.lon });
+        }
+        renderAll();
+        showToast('Routes Scored', 'Updated exposure & ETA across all 3 corridors.');
+      });
+
+      document.getElementById('demoSimToggleBtn')?.addEventListener('click', () => {
+        state.demoSimEnabled = !state.demoSimEnabled;
+        savePrefs();
+        renderAll();
+        showToast('Demo Simulation', state.demoSimEnabled ? 'Hotspot simulation ON' : 'Hotspot simulation OFF (baseline/live)');
+      });
+
+      document.getElementById('resetSimBtn')?.addEventListener('click', () => {
+        state.demoSimEnabled = false;
+        state.selectedRouteId = 'cleanest';
+        state.departShiftMin = 0;
+        state.healthProfile = 'standard';
+        state.customPmWeight = 1.0;
+        state.customNo2Weight = 1.0;
+        state.canyonRatio = 1.2;
+        state.idlingPct = 18;
+        savePrefs();
+        renderAll();
+        showToast('Reset Complete', 'Restored clean baseline & turned Demo Simulation OFF.');
+      });
+
+      document.querySelectorAll('[data-select-route]').forEach((el) => {
+        el.addEventListener('click', () => {
+          state.selectedRouteId = el.getAttribute('data-select-route');
+          savePrefs();
+          renderAll();
+        });
+      });
+
+      document.getElementById('routeCardsList')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-select-route]');
+        if (btn) {
+          state.selectedRouteId = btn.getAttribute('data-select-route');
+          savePrefs();
+          renderAll();
+        }
+      });
+
+      document.getElementById('svgPathCleanest')?.addEventListener('click', () => {
+        state.selectedRouteId = 'cleanest';
+        savePrefs();
+        renderAll();
+      });
+      document.getElementById('svgPathBalanced')?.addEventListener('click', () => {
+        state.selectedRouteId = 'balanced';
+        savePrefs();
+        renderAll();
+      });
+      document.getElementById('svgPathFastest')?.addEventListener('click', () => {
+        state.selectedRouteId = 'fastest';
+        savePrefs();
+        renderAll();
+      });
+
+      // Copilot bindings
+      document.getElementById('copilotToggleBtn')?.addEventListener('click', () => setCopilotOpen(true));
+      document.getElementById('askCopilotAboutMapBtn')?.addEventListener('click', () => {
+        setCopilotOpen(true);
+        askCopilot('Explain the trade-off between the Cleanest Air Route and Fastest Route right now.');
+      });
+      document.getElementById('subPageOpenCopilotBtn')?.addEventListener('click', () => setCopilotOpen(true));
+      document.getElementById('closeCopilotBtn')?.addEventListener('click', () => setCopilotOpen(false));
+      document.getElementById('copilotBackdrop')?.addEventListener('click', () => setCopilotOpen(false));
+
+      document.getElementById('saveGroqKeyBtn')?.addEventListener('click', () => {
+        const val = document.getElementById('groqApiKeyInput')?.value?.trim() || '';
+        const mod = document.getElementById('groqModelSelect')?.value || 'llama-3.3-70b-versatile';
+        state.groq.apiKey = val;
+        state.groq.model = mod;
+        savePrefs();
+        syncCopilotInputs();
+        showToast('GroqCloud Settings Saved', val ? `Using ${mod}` : 'Using local fallback engine');
+      });
+
+      document.getElementById('groqModelSelect')?.addEventListener('change', (e) => {
+        state.groq.model = e.target.value;
+        savePrefs();
+        syncCopilotInputs();
+      });
+
+      document.querySelectorAll('.quick-prompt-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          askCopilot(btn.getAttribute('data-quick-prompt'));
+        });
+      });
+
+      document.getElementById('copilotChatForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inp = document.getElementById('copilotPromptInput');
+        if (!inp) return;
+        const text = inp.value;
+        inp.value = '';
+        askCopilot(text);
+      });
+    }
+
+    /* ---------- Destination search (autocomplete + distance) ---------- */
+    const LOCAL_PLACES = [
+      { name: 'Gandhipuram Bus Stand', lat: 11.0183, lon: 76.9725 },
+      { name: 'Coimbatore Junction Railway Station', lat: 10.9990, lon: 76.9669 },
+      { name: 'Coimbatore International Airport', lat: 11.0300, lon: 77.0434 },
+      { name: 'Singanallur Lake', lat: 10.9962, lon: 77.0240 },
+      { name: 'RS Puram', lat: 11.0083, lon: 76.9500 },
+      { name: 'Peelamedu', lat: 11.0240, lon: 77.0020 },
+      { name: 'Saravanampatti', lat: 11.0790, lon: 76.9990 },
+      { name: 'Pappampatti Pirivu', lat: 11.0270, lon: 77.1420 },
+      { name: 'Race Course', lat: 10.9980, lon: 76.9760 }
+    ];
+
+    function haversineKm(lat1, lon1, lat2, lon2) {
+      const R = 6371, rad = (d) => (d * Math.PI) / 180;
+      const dLat = rad(lat2 - lat1), dLon = rad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(a));
+    }
+
+    async function searchPlaces(q) {
+      const text = (q || '').trim().toLowerCase();
+      const local = LOCAL_PLACES.filter((p) => !text || p.name.toLowerCase().includes(text)).map((p) => ({ ...p, sub: 'Coimbatore • suggested' }));
+      if (text.length < 3) return local;
+      const { lat, lon } = state.location;
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&q=${encodeURIComponent(q.trim())}&viewbox=${lon - 0.6},${lat + 0.6},${lon + 0.6},${lat - 0.6}`;
+      const data = await safeFetchJson(url, 4500);
+      const remote = Array.isArray(data) ? data.map((d) => {
+        const parts = String(d.display_name || '').split(',').map((x) => x.trim());
+        return { name: d.name || parts[0], lat: Number(d.lat), lon: Number(d.lon), sub: parts.slice(1, 4).join(', ') };
+      }).filter((d) => Number.isFinite(d.lat) && Number.isFinite(d.lon)) : [];
+      return [...local.slice(0, 3), ...remote].slice(0, 8);
+    }
+
+    async function selectDestination(place) {
+      state.destination = place.name;
+      state.destCoords = { lat: place.lat, lon: place.lon };
+      const { lat, lon } = state.location;
+      const osrm = await safeFetchJson(`https://router.project-osrm.org/route/v1/driving/${lon},${lat};${place.lon},${place.lat}?overview=full&geometries=geojson&alternatives=true`, 8000);
+      const rs = osrm && Array.isArray(osrm.routes) ? [...osrm.routes].sort((a, b) => a.duration - b.duration) : [];
+      state.routeGeo = buildRouteGeo(rs, lat, lon, place);
+      const r = rs[0];
+      if (r) state.trip = { km: Number((r.distance / 1000).toFixed(1)), min: Math.max(3, Math.round(r.duration / 60)), via: 'road' };
+      else {
+        const km = Number((haversineKm(lat, lon, place.lat, place.lon) * 1.3).toFixed(1));
+        state.trip = { km, min: Math.max(3, Math.round((km / 28) * 60)), via: 'estimate' };
+      }
+      const inp = document.getElementById('destinationInput');
+      if (inp) inp.value = place.name;
+      document.getElementById('destSuggestions')?.classList.add('hidden');
+      renderAll();
+    }
+
+    function updateTripInfo() {
+      const el = document.getElementById('destTripInfo');
+      if (!el) return;
+      el.textContent = state.trip ? `${state.trip.km} km • ~${state.trip.min} min by car (${state.trip.via === 'road' ? 'road route' : 'straight-line estimate'})` : '';
+    }
+
+    function initDestinationSearch() {
+      const inp = document.getElementById('destinationInput');
+      const box = document.getElementById('destSuggestions');
+      if (!inp || !box) return;
+      let timer = null, seq = 0;
+      const show = (items, loading) => {
+        box.innerHTML = items.length
+          ? items.map((p, i) => `<button type="button" data-i="${i}" class="w-full text-left px-3 py-2 hover:brightness-125 border-b" style="border-color:var(--border-subtle);color:var(--text-primary)"><span class="block text-xs font-semibold">${escapeHtml(p.name)}</span><span class="block text-[10px]" style="color:var(--text-secondary)">${escapeHtml(p.sub || '')}</span></button>`).join('')
+          : `<div class="px-3 py-2 text-[11px]" style="color:var(--text-secondary)">${loading ? 'Searching…' : 'No matches — try another name'}</div>`;
+        box.classList.remove('hidden');
+        box._items = items;
+      };
+      const run = async () => {
+        const id = ++seq;
+        show(box._items || [], true);
+        const items = await searchPlaces(inp.value);
+        if (id === seq) show(items, false);
+      };
+      inp.addEventListener('focus', run);
+      inp.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 350); });
+      inp.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const items = box._items && box._items.length ? box._items : await searchPlaces(inp.value);
+          if (items[0]) selectDestination(items[0]);
+        }
+      });
+      box.addEventListener('mousedown', (e) => {
+        const b = e.target.closest('[data-i]');
+        if (!b) return;
+        e.preventDefault();
+        selectDestination(box._items[Number(b.dataset.i)]);
+      });
+      document.addEventListener('click', (e) => { if (!box.contains(e.target) && e.target !== inp) box.classList.add('hidden'); });
+    }
+
+    /* ---------- In-app map (Leaflet + OpenStreetMap) ---------- */
+    let lMap = null, lLayer = null, lKey = '';
+
+    function buildRouteGeo(rs, lat, lon, place) {
+      const toLL = (rt) => rt.geometry.coordinates.map(([x, y]) => [y, x]);
+      const off = (pts, d) => pts.map(([a, b]) => [a + d, b + d]);
+      const fast = rs.length ? toLL(rs[0]) : [[lat, lon], [place.lat, place.lon]];
+      const slow = rs.length > 1 ? toLL(rs[rs.length - 1]) : off(fast, 0.0007);
+      const mid = rs.length > 2 ? toLL(rs[1]) : off(fast, -0.0007);
+      return { fastest: fast, balanced: mid, cleanest: slow };
+    }
+
+    function initLeafletMap() {
+      const el = document.getElementById('leafletMap');
+      if (!window.L || !el) return;
+      try {
+        lMap = L.map(el).setView([state.location.lat, state.location.lon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(lMap);
+        lLayer = L.layerGroup().addTo(lMap);
+        el.classList.remove('hidden');
+        document.getElementById('corridorSvgMap')?.classList.add('hidden');
+        const b = document.getElementById('leafletStatusBadge');
+        if (b) b.textContent = 'OpenStreetMap • Live Map';
+      } catch (_) { lMap = null; }
+    }
+
+    function renderLeafletMap() {
+      if (!lMap) return;
+      lMap.invalidateSize();
+      lLayer.clearLayers();
+      const { lat, lon } = state.location;
+      const pts = [[lat, lon]];
+      const C = { cleanest: '#10b981', balanced: '#06b6d4', fastest: '#f59e0b' };
+      const N = { cleanest: 'Cleanest Air Route', balanced: 'Balanced Route', fastest: 'Fastest Route' };
+      if (state.routeGeo) {
+        Object.keys(C).filter((k) => k !== state.selectedRouteId).concat(state.selectedRouteId).forEach((id) => {
+          const sel = id === state.selectedRouteId;
+          const pl = L.polyline(state.routeGeo[id], { color: C[id], weight: sel ? 8 : 4, opacity: sel ? 1 : 0.55 }).addTo(lLayer);
+          pl.bindTooltip(N[id], { sticky: true });
+          pl.on('click', () => { state.selectedRouteId = id; savePrefs(); renderAll(); });
+          pts.push(...state.routeGeo[id]);
+        });
+      }
+      state.hazards.forEach((h) => L.circleMarker([h.lat, h.lon], { radius: 7, color: '#f43f5e', fillColor: '#f43f5e', fillOpacity: 0.55 }).bindTooltip(h.type).addTo(lLayer));
+      L.circleMarker([lat, lon], { radius: 9, color: '#fff', weight: 2, fillColor: '#06b6d4', fillOpacity: 1 }).bindTooltip('Origin', { permanent: true, direction: 'top', offset: [0, -8] }).addTo(lLayer);
+      const d = state.destCoords;
+      if (d) L.circleMarker([d.lat, d.lon], { radius: 9, color: '#fff', weight: 2, fillColor: '#10b981', fillOpacity: 1 }).bindTooltip(state.destination, { permanent: true, direction: 'top', offset: [0, -8] }).addTo(lLayer);
+      const key = `${d ? d.lat + ',' + d.lon : 'none'}|${lat.toFixed(3)},${lon.toFixed(3)}`;
+      if (key !== lKey) {
+        lKey = key;
+        if (d) lMap.fitBounds(pts, { padding: [30, 30] });
+        else lMap.setView([lat, lon], 13);
+      }
+    }
+
+    /**
+     * Boot immediately on DOMContentLoaded so UI is never blank
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        loadPrefs();
+        setTheme(state.theme);
+        bindEvents();
+        initSettings();
+        initDestinationSearch();
+        initLeafletMap();
+        syncCopilotInputs();
+        renderAll();
+        // Attempt live GPS + Open-Meteo enrichment in background with safe timeouts
+        fetchLiveLocation(false);
+      } catch (err) {
+        const main = document.getElementById('appMain');
+        if (main) {
+          main.innerHTML = `<div class="surface-card p-4 text-xs text-amber-200">Recovered from startup error: ${escapeHtml(err.message)}</div>`;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
